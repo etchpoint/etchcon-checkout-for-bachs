@@ -1,0 +1,53 @@
+{
+  "name": "etchpoint/payment-integrations-for-bachs",
+  "description": "Bachs payment integrations for WooCommerce, Paid Memberships Pro, Gravity Forms, Fluent Forms and GiveWP.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Etchpoint",
+      "homepage": "https://etchpoint.com/"
+    }
+  ],
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
+    "php-stubs/wordpress-stubs": "^7.1",
+    "phpcompatibility/phpcompatibility-wp": "^2.1.8",
+    "phpstan/phpstan": "^2.2",
+    "phpunit/phpunit": "^10.5.62",
+    "wp-coding-standards/wpcs": "^3.4.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Etchpoint\\BachsIntegrations\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Etchpoint\\BachsIntegrations\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "lint": "phpcs --standard=phpcs.xml.dist",
+    "lint:fix": "phpcbf --standard=phpcs.xml.dist",
+    "analyse": "phpstan analyse --configuration=phpstan.neon.dist --no-progress",
+    "test": "phpunit --configuration=phpunit.xml.dist",
+    "qa": [
+      "@lint",
+      "@analyse",
+      "@test"
+    ]
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<ruleset name="Payment Integrations for Bachs">
+	<description>WordPress and PHP compatibility rules for Payment Integrations for Bachs.</description>
+
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg value="ps"/>
+
+	<file>payment-integrations-for-bachs.php</file>
+	<file>src</file>
+	<file>tests</file>
+	<file>uninstall.php</file>
+
+	<exclude-pattern>vendor/*</exclude-pattern>
+
+	<config name="minimum_supported_wp_version" value="6.8"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress">
+		<!-- Namespaced PSR-4 classes intentionally use ClassName.php filenames. -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+	</rule>
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array" value="payment-integrations-for-bachs"/>
+		</properties>
+	</rule>
+</ruleset>
