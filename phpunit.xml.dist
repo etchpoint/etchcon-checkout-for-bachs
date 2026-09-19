@@ -1,19 +1,42 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         cacheDirectory=".phpunit.cache"
-         colors="true"
-         failOnWarning="true"
-         failOnRisky="true">
-	<testsuites>
-		<testsuite name="unit">
-			<directory suffix="Test.php">tests/Unit</directory>
-		</testsuite>
-	</testsuites>
-	<source>
-		<include>
-			<directory suffix=".php">src</directory>
-		</include>
-	</source>
-</phpunit>
+<?xml version="1.0"?>
+<ruleset name="Payment Integrations for Bachs">
+	<description>WordPress and PHP compatibility rules for Payment Integrations for Bachs.</description>
+
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg value="ps"/>
+
+	<file>payment-integrations-for-bachs.php</file>
+	<file>src</file>
+	<file>tests</file>
+	<file>uninstall.php</file>
+
+	<exclude-pattern>vendor/*</exclude-pattern>
+
+	<config name="minimum_supported_wp_version" value="6.8"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress"/>
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!--
+		Production classes and PHPUnit tests use PSR-4 ClassName.php filenames.
+		The WordPress filename sniff enforces lowercase/hyphenated filenames, which
+		conflicts with PSR-4 class names, so filename checks are excluded only for
+		these PSR-4 directories.
+	-->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>src/*</exclude-pattern>
+		<exclude-pattern>tests/*</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="payment-integrations-for-bachs"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>
