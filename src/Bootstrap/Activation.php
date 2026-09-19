@@ -9,7 +9,15 @@ declare(strict_types=1);
 
 namespace Etchpoint\BachsIntegrations\Bootstrap;
 
+/**
+ * Handles plugin activation requirements.
+ */
 final class Activation {
+	/**
+	 * Verify that the current WordPress installation meets activation requirements.
+	 *
+	 * @return void
+	 */
 	public static function activate(): void {
 		$wordpress_version = (string) get_bloginfo( 'version' );
 
