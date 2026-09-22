@@ -69,10 +69,13 @@ final class WebhookSignatureVerifier {
 		string $signing_secret
 	): VerifiedWebhookSignature {
 		if ( '' === $signing_secret ) {
+			// Exception fields are internal verification data, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new WebhookVerificationException(
 				WebhookVerificationException::CODE_INVALID_SECRET,
 				'Bachs webhook signing secret is not configured.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		$parsed    = self::parse_v2_header( $signature_v2_header );
@@ -80,10 +83,13 @@ final class WebhookSignatureVerifier {
 		$now       = ( $this->clock )();
 
 		if ( abs( $now - $timestamp ) > $this->tolerance_seconds ) {
+			// Exception fields are internal verification data, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new WebhookVerificationException(
 				WebhookVerificationException::CODE_STALE_TIMESTAMP,
 				'Bachs webhook signature timestamp is outside the accepted freshness window.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		$expected = hash_hmac(
@@ -98,10 +104,13 @@ final class WebhookSignatureVerifier {
 			}
 		}
 
+		// Exception fields are internal verification data, not rendered output.
+		// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		throw new WebhookVerificationException(
 			WebhookVerificationException::CODE_SIGNATURE_MISMATCH,
 			'Bachs webhook signature did not match the request body.'
 		);
+		// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 	}
 
 	/**

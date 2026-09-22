@@ -104,7 +104,7 @@ final class WebhookSignatureVerifierTest extends TestCase {
 	 * @return void
 	 */
 	public function test_stale_timestamp_is_rejected(): void {
-		$verifier = $this->verifier();
+		$verifier  = $this->verifier();
 		$timestamp = self::NOW - 301;
 		$signature = hash_hmac( 'sha256', $timestamp . '.' . self::RAW_BODY, self::SECRET );
 
