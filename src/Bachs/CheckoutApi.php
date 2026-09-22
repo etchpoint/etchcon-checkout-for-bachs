@@ -51,7 +51,7 @@ final class CheckoutApi {
 	 * @param array<string, string> $metadata    Optional non-sensitive metadata.
 	 * @return CheckoutSession
 	 *
-	 * @throws InvalidArgumentException|ApiException When validation or the provider request fails.
+	 * @throws InvalidArgumentException When checkout input or environment validation fails.
 	 */
 	public function create_raw_checkout(
 		PaymentIntent $intent,

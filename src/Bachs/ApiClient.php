@@ -124,7 +124,7 @@ final class ApiClient implements ApiRequester {
 	 * @param string|null               $idempotency_key Idempotency key for mutating operations.
 	 * @return array<string, mixed>
 	 *
-	 * @throws ApiException|InvalidArgumentException When the request fails, JSON is invalid, or the path is unsafe.
+	 * @throws ApiException When transport, encoding, provider, or response processing fails.
 	 */
 	private function request( string $method, string $path, ?array $body, ?string $idempotency_key ): array {
 		self::assert_api_path( $path );
@@ -185,10 +185,12 @@ final class ApiClient implements ApiRequester {
 			try {
 				$value = json_decode( $body, true, 512, JSON_THROW_ON_ERROR );
 			} catch ( JsonException $exception ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Status code is exception context, not rendered output.
 				throw ApiException::protocol( 'Bachs returned a response that was not valid JSON.', $status_code );
 			}
 
 			if ( ! is_array( $value ) ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Status code is exception context, not rendered output.
 				throw ApiException::protocol( 'Bachs returned an unexpected JSON response shape.', $status_code );
 			}
 

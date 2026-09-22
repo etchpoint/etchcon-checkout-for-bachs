@@ -24,10 +24,10 @@ enum Environment: string {
 	/**
 	 * Get the fixed API origin for an environment.
 	 *
-	 * @param self $environment Bachs environment.
+	 * @param Environment $environment Bachs environment.
 	 * @return string
 	 */
-	public static function base_url( self $environment ): string {
+	public static function base_url( Environment $environment ): string {
 		return match ( $environment ) {
 			self::SANDBOX => 'https://sandbox-api.bachs.io',
 			self::LIVE    => 'https://api.bachs.io',
@@ -37,10 +37,10 @@ enum Environment: string {
 	/**
 	 * Get the required API-key prefix for an environment.
 	 *
-	 * @param self $environment Bachs environment.
+	 * @param Environment $environment Bachs environment.
 	 * @return string
 	 */
-	public static function key_prefix( self $environment ): string {
+	public static function key_prefix( Environment $environment ): string {
 		return match ( $environment ) {
 			self::SANDBOX => 'sk_sandbox_',
 			self::LIVE    => 'sk_live_',
@@ -50,13 +50,13 @@ enum Environment: string {
 	/**
 	 * Assert that an API key belongs to the selected environment.
 	 *
-	 * @param self   $environment Bachs environment.
-	 * @param string $api_key     Bachs secret API key.
+	 * @param Environment $environment Bachs environment.
+	 * @param string      $api_key     Bachs secret API key.
 	 * @return void
 	 *
 	 * @throws InvalidArgumentException When the key is empty, padded, or belongs to another environment.
 	 */
-	public static function assert_api_key( self $environment, string $api_key ): void {
+	public static function assert_api_key( Environment $environment, string $api_key ): void {
 		if ( '' === $api_key || trim( $api_key ) !== $api_key ) {
 			throw new InvalidArgumentException( 'Bachs API key must be a non-empty value without surrounding whitespace.' );
 		}
