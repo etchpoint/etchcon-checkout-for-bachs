@@ -74,6 +74,7 @@ final class EventRepository {
 			self::utc_now()
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 
@@ -89,6 +90,7 @@ final class EventRepository {
 			$this->table,
 			$event_id
 		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		$row = $this->wpdb->get_row( $sql, ARRAY_A );
 
 		if ( ! is_array( $row ) ) {
@@ -110,6 +112,7 @@ final class EventRepository {
 			$this->table,
 			$provider_event_id
 		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		$row = $this->wpdb->get_row( $sql, ARRAY_A );
 
 		if ( ! is_array( $row ) ) {
@@ -175,6 +178,7 @@ final class EventRepository {
 			$stale_before
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 
@@ -200,6 +204,7 @@ final class EventRepository {
 			EventProcessingStatus::PROCESSING->value
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 
@@ -281,6 +286,7 @@ final class EventRepository {
 			EventProcessingStatus::PROCESSING->value
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 

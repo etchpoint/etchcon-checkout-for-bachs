@@ -100,6 +100,7 @@ final class IntentRepository {
 			$this->table,
 			$id
 		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		$row = $this->wpdb->get_row( $sql, ARRAY_A );
 
 		if ( ! is_array( $row ) ) {
@@ -158,6 +159,7 @@ final class IntentRepository {
 			$id
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 
@@ -205,6 +207,7 @@ final class IntentRepository {
 			$id
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 
@@ -244,6 +247,7 @@ final class IntentRepository {
 			$stale_before
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 
@@ -272,6 +276,7 @@ final class IntentRepository {
 			ApplicationStatus::PROCESSING->value
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 
@@ -321,6 +326,7 @@ final class IntentRepository {
 			$column,
 			$value
 		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		$row = $this->wpdb->get_row( $sql, ARRAY_A );
 
 		if ( ! is_array( $row ) ) {
@@ -399,6 +405,7 @@ final class IntentRepository {
 			ApplicationStatus::PROCESSING->value
 		);
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		return 1 === $this->wpdb->query( $sql );
 	}
 

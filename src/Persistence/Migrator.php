@@ -36,7 +36,11 @@ final class Migrator {
 	public static function migrate(): void {
 		global $wpdb;
 
-		/** @var \wpdb $wpdb */
+		/**
+		 * WordPress database abstraction instance.
+		 *
+		 * @var \wpdb $wpdb
+		 */
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
 		$charset_collate = $wpdb->get_charset_collate();
