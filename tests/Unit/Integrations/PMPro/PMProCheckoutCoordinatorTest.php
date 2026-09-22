@@ -211,7 +211,7 @@ final class PMProCheckoutCoordinatorTest extends TestCase {
 	private static function checkout_session( string $checkout_id, string $url, string $status ): CheckoutSession {
 		return CheckoutSession::from_api_response(
 			array(
-				'id'           => $checkout_id,
+				'checkout_id'  => $checkout_id,
 				'checkout_url' => $url,
 				'status'       => $status,
 				'reference'    => 'etp_bch_00112233445566778899aabbccddeeff',
