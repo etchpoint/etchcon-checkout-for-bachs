@@ -198,6 +198,72 @@ final class PaymentIntent {
 		);
 	}
 
+
+	/**
+	 * Rehydrate a payment intent from trusted plugin persistence.
+	 *
+	 * This factory exists only for repository hydration. External/provider data
+	 * must not call it directly as a substitute for the verification pipeline.
+	 *
+	 * @param string            $uuid               Intent UUID.
+	 * @param string            $integration        Integration identifier.
+	 * @param string            $local_object_type  Host object type.
+	 * @param string            $local_object_id    Host object identifier.
+	 * @param string            $environment        Bachs environment.
+	 * @param string            $reference          Opaque checkout reference.
+	 * @param string            $idempotency_key    Bachs idempotency key.
+	 * @param Money             $expected_amount    Trusted amount and currency.
+	 * @param int               $attempt            Logical checkout attempt.
+	 * @param ProviderStatus    $provider_status    Persisted provider state.
+	 * @param ApplicationStatus $application_status Persisted application state.
+	 * @return self
+	 *
+	 * @throws InvalidArgumentException When a persisted invariant is malformed.
+	 */
+	public static function rehydrate(
+		string $uuid,
+		string $integration,
+		string $local_object_type,
+		string $local_object_id,
+		string $environment,
+		string $reference,
+		string $idempotency_key,
+		Money $expected_amount,
+		int $attempt,
+		ProviderStatus $provider_status,
+		ApplicationStatus $application_status
+	): self {
+		self::assert_uuid( $uuid );
+		self::assert_identifier( $integration, 'Integration' );
+		self::assert_identifier( $local_object_type, 'Local object type' );
+		self::assert_non_empty( $local_object_id, 'Local object ID' );
+		self::assert_environment( $environment );
+		self::assert_non_empty( $reference, 'Reference' );
+		self::assert_non_empty( $idempotency_key, 'Idempotency key' );
+
+		if ( ! $expected_amount->is_positive() ) {
+			throw new InvalidArgumentException( 'Payment intent amount must be greater than zero.' );
+		}
+
+		if ( $attempt < 1 ) {
+			throw new InvalidArgumentException( 'Payment intent attempt must be at least 1.' );
+		}
+
+		return new self(
+			$uuid,
+			$integration,
+			$local_object_type,
+			$local_object_id,
+			$environment,
+			$reference,
+			$idempotency_key,
+			$expected_amount,
+			$attempt,
+			$provider_status,
+			$application_status
+		);
+	}
+
 	/**
 	 * Get the intent UUID.
 	 *
@@ -280,7 +346,7 @@ final class PaymentIntent {
 	}
 
 	/**
-	 * Get the initial provider state.
+	 * Get the provider state.
 	 *
 	 * @return ProviderStatus
 	 */
@@ -289,7 +355,7 @@ final class PaymentIntent {
 	}
 
 	/**
-	 * Get the initial application state.
+	 * Get the application state.
 	 *
 	 * @return ApplicationStatus
 	 */

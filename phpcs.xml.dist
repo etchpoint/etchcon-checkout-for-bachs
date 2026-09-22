@@ -32,6 +32,18 @@
 		<exclude-pattern>tests/*</exclude-pattern>
 	</rule>
 
+	<!--
+		The persistence layer intentionally uses the plugin's own custom tables.
+		Keep prepared-SQL checks enabled, but do not flag those repository calls
+		merely for being direct database queries or for not using object caching.
+	-->
+	<rule ref="WordPress.DB.DirectDatabaseQuery.DirectQuery">
+		<exclude-pattern>src/Persistence/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.DB.DirectDatabaseQuery.NoCaching">
+		<exclude-pattern>src/Persistence/*</exclude-pattern>
+	</rule>
+
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">

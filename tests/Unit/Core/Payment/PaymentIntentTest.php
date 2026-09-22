@@ -35,6 +35,31 @@ final class PaymentIntentTest extends TestCase {
 		self::assertSame( 1, $intent->attempt() );
 	}
 
+
+	/**
+	 * Verify trusted persistence can restore non-initial payment states.
+	 *
+	 * @return void
+	 */
+	public function test_persisted_intent_states_can_be_rehydrated(): void {
+		$intent = PaymentIntent::rehydrate(
+			'7d90c3d9-9780-4d20-8b55-ec72575a0fd5',
+			'woocommerce',
+			'order',
+			'1847',
+			PaymentIntent::ENVIRONMENT_SANDBOX,
+			'etp_bch_reference',
+			'etp:site:woo:1847:checkout:1',
+			Money::from_decimal( '2500', Currency::from_code( 'NGN' ) ),
+			1,
+			ProviderStatus::SUCCEEDED,
+			ApplicationStatus::FAILED
+		);
+
+		self::assertSame( ProviderStatus::SUCCEEDED, $intent->provider_status() );
+		self::assertSame( ApplicationStatus::FAILED, $intent->application_status() );
+	}
+
 	/**
 	 * Verify zero-value checkouts cannot become payment intents.
 	 *

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Etchpoint\BachsIntegrations\Bootstrap;
 
+use Etchpoint\BachsIntegrations\Persistence\Migrator;
+
 /**
  * Coordinates plugin bootstrap after WordPress loads plugins.
  */
@@ -44,6 +46,8 @@ final class Plugin {
 			Compatibility::register_admin_notice();
 			return;
 		}
+
+		Migrator::maybe_migrate();
 
 		/**
 		 * Fires after the Bachs integration core has passed minimum environment checks.
