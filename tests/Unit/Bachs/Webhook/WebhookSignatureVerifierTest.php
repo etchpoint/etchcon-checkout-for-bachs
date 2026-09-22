@@ -44,6 +44,7 @@ final class WebhookSignatureVerifierTest extends TestCase {
 		);
 
 		self::assertSame( self::NOW, $verified->timestamp() );
+		self::assertSame( hash( 'sha256', self::RAW_BODY ), $verified->payload_hash() );
 	}
 
 	/**

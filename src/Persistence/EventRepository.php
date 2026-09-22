@@ -15,7 +15,7 @@ use DateTimeZone;
 /**
  * Persists provider events and provides atomic deduplication/processing claims.
  */
-final class EventRepository {
+final class EventRepository implements EventStore {
 	/** Default stale-processing threshold in seconds. */
 	private const DEFAULT_STALE_SECONDS = 300;
 

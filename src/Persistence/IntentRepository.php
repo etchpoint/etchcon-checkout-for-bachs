@@ -21,7 +21,7 @@ use RuntimeException;
 /**
  * Persists and atomically transitions payment intents using WordPress wpdb.
  */
-final class IntentRepository {
+final class IntentRepository implements IntentStore {
 	/** Default stale-processing threshold in seconds. */
 	private const DEFAULT_STALE_SECONDS = 300;
 

@@ -100,7 +100,7 @@ final class WebhookSignatureVerifier {
 
 		foreach ( $parsed['signatures'] as $signature ) {
 			if ( hash_equals( $expected, $signature ) ) {
-				return new VerifiedWebhookSignature( $timestamp );
+				return new VerifiedWebhookSignature( $timestamp, hash( 'sha256', $raw_body ) );
 			}
 		}
 

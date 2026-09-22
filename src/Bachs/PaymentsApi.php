@@ -9,10 +9,12 @@ declare(strict_types=1);
 
 namespace Etchpoint\BachsIntegrations\Bachs;
 
+use InvalidArgumentException;
+
 /**
  * Retrieves authoritative provider payment state.
  */
-final class PaymentsApi {
+final class PaymentsApi implements PaymentRetriever {
 	/**
 	 * API requester.
 	 *
@@ -40,6 +42,10 @@ final class PaymentsApi {
 	public function get( string $payment_id ): ProviderPayment {
 		$data = $this->client->get( Endpoints::payment( $payment_id ) );
 
-		return ProviderPayment::from_api_response( $data );
+		try {
+			return ProviderPayment::from_api_response( $data );
+		} catch ( InvalidArgumentException ) {
+			throw ApiException::protocol( 'Bachs payment response is malformed.' );
+		}
 	}
 }
