@@ -51,8 +51,7 @@ final class CheckoutApi {
 	 * @param array<string, string> $metadata    Optional non-sensitive metadata.
 	 * @return CheckoutSession
 	 *
-	 * @throws InvalidArgumentException When URLs or metadata are invalid.
-	 * @throws ApiException             When Bachs rejects or cannot process the request.
+	 * @throws InvalidArgumentException|ApiException When validation or the provider request fails.
 	 */
 	public function create_raw_checkout(
 		PaymentIntent $intent,
@@ -142,7 +141,7 @@ final class CheckoutApi {
 		$normalized = array();
 
 		foreach ( $metadata as $key => $value ) {
-			if ( '' === $key || $key !== trim( $key ) ) {
+			if ( '' === $key || trim( $key ) !== $key ) {
 				throw new InvalidArgumentException(
 					'Bachs metadata keys must be non-empty strings without surrounding whitespace.'
 				);
@@ -176,4 +175,3 @@ final class CheckoutApi {
 		}
 	}
 }
-

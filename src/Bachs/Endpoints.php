@@ -52,7 +52,7 @@ final class Endpoints {
 	 * @throws InvalidArgumentException When the identifier is empty or padded.
 	 */
 	private static function resource_path( string $collection, string $identifier, string $label ): string {
-		if ( '' === $identifier || $identifier !== trim( $identifier ) ) {
+		if ( '' === $identifier || trim( $identifier ) !== $identifier ) {
 			// Exception text is not rendered output.
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new InvalidArgumentException( $label . ' must be a non-empty value without surrounding whitespace.' );

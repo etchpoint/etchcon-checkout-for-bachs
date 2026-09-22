@@ -64,7 +64,7 @@ final class ApiClient implements ApiRequester {
 		?HttpTransport $transport = null,
 		int $timeout_seconds = self::DEFAULT_TIMEOUT_SECONDS
 	) {
-		$environment->assert_api_key( $api_key );
+		Environment::assert_api_key( $environment, $api_key );
 
 		if ( $timeout_seconds < 1 || $timeout_seconds > 60 ) {
 			throw new InvalidArgumentException( 'Bachs API timeout must be between 1 and 60 seconds.' );
@@ -105,11 +105,10 @@ final class ApiClient implements ApiRequester {
 	 * @param string               $idempotency_key Stable idempotency key for the logical operation.
 	 * @return array<string, mixed>
 	 *
-	 * @throws ApiException             When transport or provider processing fails.
-	 * @throws InvalidArgumentException When the idempotency key is invalid.
+	 * @throws ApiException|InvalidArgumentException When transport/provider processing or idempotency validation fails.
 	 */
 	public function post( string $path, array $body, string $idempotency_key ): array {
-		if ( '' === $idempotency_key || $idempotency_key !== trim( $idempotency_key ) ) {
+		if ( '' === $idempotency_key || trim( $idempotency_key ) !== $idempotency_key ) {
 			throw new InvalidArgumentException( 'Idempotency key must be a non-empty value without surrounding whitespace.' );
 		}
 
@@ -125,8 +124,7 @@ final class ApiClient implements ApiRequester {
 	 * @param string|null               $idempotency_key Idempotency key for mutating operations.
 	 * @return array<string, mixed>
 	 *
-	 * @throws ApiException             When the request fails or returns invalid JSON.
-	 * @throws InvalidArgumentException When the path is unsafe.
+	 * @throws ApiException|InvalidArgumentException When the request fails, JSON is invalid, or the path is unsafe.
 	 */
 	private function request( string $method, string $path, ?array $body, ?string $idempotency_key ): array {
 		self::assert_api_path( $path );
@@ -160,7 +158,7 @@ final class ApiClient implements ApiRequester {
 		}
 
 		try {
-			$response = $this->transport->request( $this->environment->base_url() . $path, $args );
+			$response = $this->transport->request( Environment::base_url( $this->environment ) . $path, $args );
 		} catch ( RuntimeException $exception ) {
 			// Transport errors are exception data, not rendered output.
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
@@ -206,7 +204,7 @@ final class ApiClient implements ApiRequester {
 		$errors     = self::validation_errors( $decoded['errors'] ?? null );
 
 		// Provider error details are exception data, not rendered output.
-		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+		// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		throw new ApiException(
 			$error_code,
 			$detail,
@@ -214,6 +212,7 @@ final class ApiClient implements ApiRequester {
 			$response->retry_after(),
 			$errors
 		);
+		// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 	}
 
 	/**

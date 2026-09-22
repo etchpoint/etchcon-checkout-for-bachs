@@ -23,7 +23,7 @@ final class EnvironmentTest extends TestCase {
 	 * @return void
 	 */
 	public function test_sandbox_has_fixed_origin(): void {
-		self::assertSame( 'https://sandbox-api.bachs.io', Environment::SANDBOX->base_url() );
+		self::assertSame( 'https://sandbox-api.bachs.io', Environment::base_url( Environment::SANDBOX ) );
 	}
 
 	/**
@@ -32,7 +32,7 @@ final class EnvironmentTest extends TestCase {
 	 * @return void
 	 */
 	public function test_live_has_fixed_origin(): void {
-		self::assertSame( 'https://api.bachs.io', Environment::LIVE->base_url() );
+		self::assertSame( 'https://api.bachs.io', Environment::base_url( Environment::LIVE ) );
 	}
 
 	/**
@@ -41,7 +41,7 @@ final class EnvironmentTest extends TestCase {
 	 * @return void
 	 */
 	public function test_sandbox_accepts_sandbox_key(): void {
-		Environment::SANDBOX->assert_api_key( 'sk_sandbox_test_fixture_not_secret' );
+		Environment::assert_api_key( Environment::SANDBOX, 'sk_sandbox_test_fixture_not_secret' );
 		self::addToAssertionCount( 1 );
 	}
 
@@ -52,6 +52,6 @@ final class EnvironmentTest extends TestCase {
 	 */
 	public function test_sandbox_rejects_live_key(): void {
 		$this->expectException( InvalidArgumentException::class );
-		Environment::SANDBOX->assert_api_key( 'sk_live_test_fixture_not_secret' );
+		Environment::assert_api_key( Environment::SANDBOX, 'sk_live_test_fixture_not_secret' );
 	}
 }
