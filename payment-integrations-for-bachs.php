@@ -5,6 +5,7 @@
  * Version: 1.0.0
  * Requires at least: 6.8
  * Requires PHP: 8.1
+ * WC requires at least: 8.3
  * Author: Etchpoint
  * Author URI: https://etchpoint.com/
  * License: GPL-2.0-or-later

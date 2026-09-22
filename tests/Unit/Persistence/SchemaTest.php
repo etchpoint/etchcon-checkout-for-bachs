@@ -36,6 +36,8 @@ final class SchemaTest extends TestCase {
 
 		self::assertStringContainsString( 'charge_id VARCHAR(191) NULL', $sql );
 		self::assertStringContainsString( 'UNIQUE KEY provider_charge_id (charge_id)', $sql );
+		self::assertStringContainsString( 'UNIQUE KEY idempotency_key (idempotency_key)', $sql );
+		self::assertStringContainsString( 'UNIQUE KEY local_attempt (integration, local_object_type, local_object_id, attempt)', $sql );
 	}
 
 	/**

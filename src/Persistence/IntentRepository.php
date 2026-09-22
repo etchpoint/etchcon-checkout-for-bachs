@@ -21,7 +21,7 @@ use RuntimeException;
 /**
  * Persists and atomically transitions payment intents using WordPress wpdb.
  */
-final class IntentRepository implements IntentStore {
+final class IntentRepository implements IntentStore, CheckoutIntentStore {
 	/** Default stale-processing threshold in seconds. */
 	private const DEFAULT_STALE_SECONDS = 300;
 
@@ -86,6 +86,39 @@ final class IntentRepository implements IntentStore {
 		}
 
 		return (int) $this->wpdb->insert_id;
+	}
+
+	/**
+	 * Find the latest logical attempt for a host application object.
+	 *
+	 * @param string $integration       Integration identifier.
+	 * @param string $local_object_type Host object type.
+	 * @param string $local_object_id   Host object identifier.
+	 * @return IntentRecord|null
+	 */
+	public function find_latest_for_local_object(
+		string $integration,
+		string $local_object_type,
+		string $local_object_id
+	): ?IntentRecord {
+		$sql = (string) $this->wpdb->prepare(
+			'SELECT * FROM %i
+			WHERE integration = %s AND local_object_type = %s AND local_object_id = %s
+			ORDER BY attempt DESC, id DESC
+			LIMIT 1',
+			$this->table,
+			$integration,
+			$local_object_type,
+			$local_object_id
+		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
+		$row = $this->wpdb->get_row( $sql, ARRAY_A );
+
+		if ( ! is_array( $row ) ) {
+			return null;
+		}
+
+		return $this->hydrate( $row );
 	}
 
 	/**

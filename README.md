@@ -1,10 +1,14 @@
 # Payment Integrations for Bachs
 
-WordPress payment integrations for Bachs, maintained by Etchpoint.
+Open-source WordPress payment integrations for Bachs, maintained by Etchpoint.
 
 ## Current version
 
-`1.0.0` is the initial plugin version and is under active development.
+`1.0.0` is under active development.
+
+## Current integration
+
+WooCommerce one-time hosted checkout is the first supported adapter being implemented. The shared core provides payment intents, exact money handling, Bachs API access, signed webhook verification, event deduplication, and verified payment evidence.
 
 ## Architecture
 
@@ -14,6 +18,7 @@ A public technical overview is available in [`docs/architecture.md`](docs/archit
 
 - PHP 8.1+
 - WordPress 6.8+
+- WooCommerce 8.3+ for the WooCommerce adapter
 - Composer 2.x for development
 
 ## Development setup
@@ -23,7 +28,7 @@ composer install
 composer qa
 ```
 
-The repository must commit a real `composer.lock` after dependencies are resolved in a Composer-enabled environment. Do not hand-create or approximate the lock file.
+The repository should commit a genuine `composer.lock` after dependencies are resolved in a Composer-enabled development environment.
 
 ## Quality gates
 
@@ -42,8 +47,4 @@ The WordPress.org release ZIP must include the production Composer autoloader an
 composer install --no-dev --prefer-dist --optimize-autoloader
 ```
 
-The packaged ZIP itself must be tested before distribution.
-
-## Status
-
-Step 1 provides only the repository, bootstrap, compatibility checks, static-analysis/test configuration and CI. Payment logic starts in later build steps.
+The packaged ZIP itself must be tested on a clean WordPress installation before distribution.

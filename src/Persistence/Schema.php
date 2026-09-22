@@ -14,7 +14,7 @@ namespace Etchpoint\BachsIntegrations\Persistence;
  */
 final class Schema {
 	/** Current database schema version. */
-	public const VERSION = '1';
+	public const VERSION = '2';
 
 	/** Option used to track the installed schema version. */
 	public const VERSION_OPTION = 'etchpoint_bachs_schema_version';
@@ -80,8 +80,10 @@ final class Schema {
 			. "PRIMARY KEY  (id),\n"
 			. "UNIQUE KEY uuid (uuid),\n"
 			. "UNIQUE KEY reference (reference),\n"
+			. "UNIQUE KEY idempotency_key (idempotency_key),\n"
 			. "UNIQUE KEY checkout_id (checkout_id),\n"
 			. "UNIQUE KEY provider_charge_id (charge_id),\n"
+			. "UNIQUE KEY local_attempt (integration, local_object_type, local_object_id, attempt),\n"
 			. "KEY local_lookup (integration, local_object_type, local_object_id),\n"
 			. "KEY state_lookup (provider_status, application_status)\n"
 			. ") {$charset_collate};";

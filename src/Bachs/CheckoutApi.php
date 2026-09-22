@@ -15,7 +15,7 @@ use InvalidArgumentException;
 /**
  * Creates and retrieves hosted Bachs checkout sessions.
  */
-final class CheckoutApi {
+final class CheckoutApi implements CheckoutProvider {
 	/** Maximum provider metadata keys. */
 	private const MAX_METADATA_KEYS = 20;
 

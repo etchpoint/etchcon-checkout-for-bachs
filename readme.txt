@@ -10,10 +10,10 @@ Payment Integrations for Bachs connects Bachs hosted payments to supported WordP
 
 == Development Status ==
 
-Version 1.0.0 is under active development. The implementation source of truth is docs/architecture.md.
+Version 1.0.0 is under active development and is not yet intended for production use or WordPress.org submission.
 
-This repository is not ready for WordPress.org submission until the architecture's 1.0.0 definition of done is satisfied.
+The public repository contains implementation source and technical documentation. Internal build planning is maintained separately.
 
 == External Service ==
 
-Bachs is a third-party payment service required to process payments. Detailed external-service disclosure, terms and privacy links will be completed before release.
+Bachs is a third-party payment service required to process payments. Complete service, terms, privacy, and data-transfer disclosures will be finalized before public release.
