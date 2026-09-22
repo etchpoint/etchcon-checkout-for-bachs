@@ -5,6 +5,8 @@ parameters:
     bootstrapFiles:
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+    scanFiles:
+        - phpstan-stubs/pmpro.php
     level: 8
     paths:
         - src

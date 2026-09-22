@@ -13,7 +13,7 @@ use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
 /**
- * Registers WooCommerce gateway, Blocks, webhook, and compatibility hooks.
+ * Registers WooCommerce gateway, Blocks, return, and compatibility hooks.
  */
 final class Integration {
 	/**
@@ -53,7 +53,6 @@ final class Integration {
 
 		add_filter( 'woocommerce_payment_gateways', array( self::class, 'add_gateway' ) );
 		add_action( 'woocommerce_api_' . BrowserReturnController::ENDPOINT, array( BrowserReturnController::class, 'handle' ) );
-		add_action( 'rest_api_init', array( WebhookEndpoint::class, 'register_route' ) );
 		add_action(
 			'woocommerce_blocks_payment_method_type_registration',
 			array( self::class, 'register_blocks_payment_method' )

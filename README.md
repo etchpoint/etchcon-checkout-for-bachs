@@ -8,7 +8,7 @@ Open-source WordPress payment integrations for Bachs, maintained by Etchpoint.
 
 ## Current integration
 
-WooCommerce one-time hosted checkout is the first supported adapter being implemented. The shared core provides payment intents, exact money handling, Bachs API access, signed webhook verification, event deduplication, and verified payment evidence.
+WooCommerce and Paid Memberships Pro one-time hosted checkout integrations are implemented on the shared payment core. The core provides payment intents, exact money handling, Bachs API access, signed webhook verification, event deduplication, and verified payment evidence.
 
 ## Architecture
 
