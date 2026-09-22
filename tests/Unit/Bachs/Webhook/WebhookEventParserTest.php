@@ -73,7 +73,7 @@ final class WebhookEventParserTest extends TestCase {
 		$parser = new WebhookEventParser();
 		// Pure PHPUnit fixture generation intentionally uses the native JSON encoder.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
-		$body   = (string) json_encode(
+		$body = (string) json_encode(
 			array(
 				'id'              => 'evt_123',
 				'type'            => 'collection.succeeded',

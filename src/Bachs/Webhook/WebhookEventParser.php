@@ -40,7 +40,11 @@ final class WebhookEventParser {
 			throw self::malformed_event( 'Bachs webhook envelope must be a JSON object.' );
 		}
 
-		/** @var array<string, mixed> $decoded */
+		/**
+		 * Decoded webhook envelope.
+		 *
+		 * @var array<string, mixed> $decoded
+		 */
 		$id              = self::required_string( $decoded, 'id' );
 		$type            = self::required_string( $decoded, 'type' );
 		$created_at_raw  = self::required_string( $decoded, 'created_at' );
@@ -52,7 +56,11 @@ final class WebhookEventParser {
 			throw self::malformed_event( 'Bachs webhook data field must be a JSON object.' );
 		}
 
-		/** @var array<string, mixed> $data */
+		/**
+		 * Decoded webhook event data.
+		 *
+		 * @var array<string, mixed> $data
+		 */
 		try {
 			$created_at = new DateTimeImmutable( $created_at_raw, new DateTimeZone( 'UTC' ) );
 		} catch ( Throwable ) {

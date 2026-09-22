@@ -133,26 +133,35 @@ final class WebhookProcessor {
 		$payload_hash = hash( 'sha256', $raw_body );
 
 		if ( ! hash_equals( $signature->payload_hash(), $payload_hash ) ) {
+			// Internal exception metadata, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw self::processing_exception(
 				WebhookProcessingException::CODE_PAYLOAD_HASH_MISMATCH,
 				'Verified webhook signature does not belong to this request body.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		$event = $this->parser->parse( $raw_body );
 
 		if ( null !== $this->organization_id && ! hash_equals( $this->organization_id, $event->organization_id() ) ) {
+			// Internal exception metadata, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw self::processing_exception(
 				WebhookProcessingException::CODE_ORGANIZATION_MISMATCH,
 				'Webhook organization does not match the configured Bachs organization.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		if ( null !== $event->account() ) {
+			// Internal exception metadata, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw self::processing_exception(
 				WebhookProcessingException::CODE_UNSUPPORTED_CONNECT_EVENT,
 				'Connected-account webhook events are outside this plugin release scope.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		$record = $this->record_and_claim( $event, $payload_hash );
@@ -226,10 +235,13 @@ final class WebhookProcessor {
 		$record = $this->events->find_by_provider_event_id( $event->id() );
 
 		if ( null === $record ) {
+			// Internal exception metadata, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw self::processing_exception(
 				WebhookProcessingException::CODE_EVENT_STORE_INCONSISTENT,
 				'Webhook event could not be loaded after deduplication.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		if ( ! hash_equals( $record->payload_hash(), $payload_hash ) || $record->event_type() !== $event->type() ) {
@@ -273,10 +285,13 @@ final class WebhookProcessor {
 		$claimed = $this->events->find_by_provider_event_id( $event->id() );
 
 		if ( null === $claimed ) {
+			// Internal exception metadata, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw self::processing_exception(
 				WebhookProcessingException::CODE_EVENT_STORE_INCONSISTENT,
 				'Claimed webhook event could not be reloaded.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		return $claimed;
