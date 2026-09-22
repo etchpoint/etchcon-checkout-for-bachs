@@ -392,18 +392,6 @@ final class WebhookProcessor {
 				$record->id(),
 				$intent->id()
 			);
-		} catch ( InvalidArgumentException ) {
-			$this->events->mark_failed(
-				$record->id(),
-				ApiException::CODE_PROTOCOL,
-				'Authoritative Bachs payment response was malformed.'
-			);
-
-			return new WebhookProcessingResult(
-				WebhookProcessingDisposition::RETRYABLE_FAILURE,
-				$record->id(),
-				$intent->id()
-			);
 		}
 
 		$verified_money = $this->verify_provider_payment( $payment, $intent, $charge_id, $checkout_id, $reference );
