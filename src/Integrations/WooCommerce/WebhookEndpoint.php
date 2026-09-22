@@ -54,6 +54,7 @@ final class WebhookEndpoint {
 	 * Handle one webhook request with lazily-created runtime configuration.
 	 *
 	 * @param WP_REST_Request $request Incoming REST request.
+	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
 	 * @return WP_REST_Response
 	 */
 	public static function handle( WP_REST_Request $request ): WP_REST_Response {

@@ -114,21 +114,39 @@ final class WooCommerceFulfillmentHandler implements PaymentFulfillmentHandler {
 			return $this->repair_already_paid_order( $order, $intent_id, $event_id, $payment );
 		}
 
+		$existing_transaction_id = $order->get_transaction_id();
+
+		if ( '' !== $existing_transaction_id && ! hash_equals( $existing_transaction_id, $payment->charge_id() ) ) {
+			$this->intents->mark_requires_review(
+				$intent_id,
+				'woo_transaction_conflict',
+				'WooCommerce order already contains a different transaction ID.'
+			);
+			$this->events->mark_requires_review(
+				$event_id,
+				'woo_transaction_conflict',
+				'WooCommerce order already contains a different transaction ID.'
+			);
+
+			return FulfillmentDisposition::REQUIRES_REVIEW;
+		}
+
 		try {
-			$order->payment_complete( $payment->charge_id() );
+			$payment_completed = $order->payment_complete( $payment->charge_id() );
+
+			if ( ! $payment_completed ) {
+				$this->intents->mark_failed( $intent_id, 'woo_payment_not_applied', 'WooCommerce did not accept the verified payment.' );
+				$this->events->mark_failed( $event_id, 'woo_payment_not_applied', 'WooCommerce did not accept the verified payment.' );
+
+				return FulfillmentDisposition::RETRYABLE_FAILURE;
+			}
+
 			$order->add_order_note(
 				__( 'Bachs payment verified and applied.', 'payment-integrations-for-bachs' )
 			);
 		} catch ( Throwable ) {
 			$this->intents->mark_failed( $intent_id, 'woo_payment_complete_failed', 'WooCommerce could not apply the verified payment.' );
 			$this->events->mark_failed( $event_id, 'woo_payment_complete_failed', 'WooCommerce could not apply the verified payment.' );
-
-			return FulfillmentDisposition::RETRYABLE_FAILURE;
-		}
-
-		if ( ! $order->is_paid() ) {
-			$this->intents->mark_failed( $intent_id, 'woo_payment_not_applied', 'WooCommerce did not enter a paid order state.' );
-			$this->events->mark_failed( $event_id, 'woo_payment_not_applied', 'WooCommerce did not enter a paid order state.' );
 
 			return FulfillmentDisposition::RETRYABLE_FAILURE;
 		}

@@ -80,6 +80,7 @@ final class WordPressWebhookController {
 	 * Process one WordPress REST webhook request.
 	 *
 	 * @param WP_REST_Request $request Incoming REST request.
+	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
 	 * @return WP_REST_Response
 	 */
 	public function handle( WP_REST_Request $request ): WP_REST_Response {
@@ -91,7 +92,7 @@ final class WordPressWebhookController {
 
 		$signature_header = $request->get_header( 'x-bachs-signature-v2' );
 
-		if ( '' === $signature_header ) {
+		if ( null === $signature_header || '' === $signature_header ) {
 			return self::response( 401, 'signature_required' );
 		}
 

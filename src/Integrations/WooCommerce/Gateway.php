@@ -43,7 +43,16 @@ final class Gateway extends WC_Payment_Gateway {
 			__( 'Pay securely using Bachs.', 'payment-integrations-for-bachs' )
 		);
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'save_gateway_settings' ) );
+	}
+
+	/**
+	 * Save gateway settings from the WooCommerce admin screen.
+	 *
+	 * @return void
+	 */
+	public function save_gateway_settings(): void {
+		$this->process_admin_options();
 	}
 
 	/**

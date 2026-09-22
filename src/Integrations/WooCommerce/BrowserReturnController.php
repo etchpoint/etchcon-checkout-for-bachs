@@ -41,18 +41,13 @@ final class BrowserReturnController {
 	 * @return void
 	 */
 	public static function handle(): void {
-		$order_id = 0;
-		$key      = '';
-
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only provider return; no state is changed.
-		if ( isset( $_GET['order_id'] ) && ! is_array( $_GET['order_id'] ) ) {
-			$order_id = absint( sanitize_text_field( wp_unslash( $_GET['order_id'] ) ) );
-		}
-
-		if ( isset( $_GET['key'] ) && is_string( $_GET['key'] ) ) {
-			$key = sanitize_text_field( wp_unslash( $_GET['key'] ) );
-		}
+		$order_id_value = $_GET['order_id'] ?? '';
+		$key_value      = $_GET['key'] ?? '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$order_id = is_scalar( $order_id_value ) ? absint( wp_unslash( (string) $order_id_value ) ) : 0;
+		$key      = is_string( $key_value ) ? sanitize_text_field( wp_unslash( $key_value ) ) : '';
 
 		$order = wc_get_order( $order_id );
 
@@ -63,7 +58,6 @@ final class BrowserReturnController {
 				array( 'response' => 400 )
 			);
 
-			return;
 		}
 
 		if ( $order->is_paid() ) {
