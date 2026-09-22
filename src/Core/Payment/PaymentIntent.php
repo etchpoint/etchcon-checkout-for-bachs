@@ -22,37 +22,81 @@ final class PaymentIntent {
 	/** Live environment identifier. */
 	public const ENVIRONMENT_LIVE = 'live';
 
-	/** @var string Intent UUID. */
+	/**
+	 * Intent UUID.
+	 *
+	 * @var string
+	 */
 	private string $uuid;
 
-	/** @var string Integration identifier. */
+	/**
+	 * Integration identifier.
+	 *
+	 * @var string
+	 */
 	private string $integration;
 
-	/** @var string Host application's object type. */
+	/**
+	 * Host application's object type.
+	 *
+	 * @var string
+	 */
 	private string $local_object_type;
 
-	/** @var string Host application's object identifier. */
+	/**
+	 * Host application's object identifier.
+	 *
+	 * @var string
+	 */
 	private string $local_object_id;
 
-	/** @var string Bachs environment. */
+	/**
+	 * Bachs environment.
+	 *
+	 * @var string
+	 */
 	private string $environment;
 
-	/** @var string Opaque checkout correlation reference. */
+	/**
+	 * Opaque checkout correlation reference.
+	 *
+	 * @var string
+	 */
 	private string $reference;
 
-	/** @var string Bachs idempotency key for this logical attempt. */
+	/**
+	 * Bachs idempotency key for this logical attempt.
+	 *
+	 * @var string
+	 */
 	private string $idempotency_key;
 
-	/** @var Money Immutable trusted amount and currency. */
+	/**
+	 * Immutable trusted amount and currency.
+	 *
+	 * @var Money
+	 */
 	private Money $expected_amount;
 
-	/** @var int Logical checkout attempt number. */
+	/**
+	 * Logical checkout attempt number.
+	 *
+	 * @var int
+	 */
 	private int $attempt;
 
-	/** @var ProviderStatus Initial provider state. */
+	/**
+	 * Initial provider state.
+	 *
+	 * @var ProviderStatus
+	 */
 	private ProviderStatus $provider_status;
 
-	/** @var ApplicationStatus Initial application state. */
+	/**
+	 * Initial application state.
+	 *
+	 * @var ApplicationStatus
+	 */
 	private ApplicationStatus $application_status;
 
 	/**
@@ -278,6 +322,7 @@ final class PaymentIntent {
 	 */
 	private static function assert_identifier( string $value, string $label ): void {
 		if ( 1 !== preg_match( '/^[a-z0-9][a-z0-9_-]*$/D', $value ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Domain exception text is not rendered output.
 			throw new InvalidArgumentException( $label . ' must use lowercase letters, numbers, underscores or hyphens.' );
 		}
 	}
@@ -293,6 +338,7 @@ final class PaymentIntent {
 	 */
 	private static function assert_non_empty( string $value, string $label ): void {
 		if ( '' === $value || trim( $value ) !== $value ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Domain exception text is not rendered output.
 			throw new InvalidArgumentException( $label . ' must be non-empty and must not contain surrounding whitespace.' );
 		}
 	}

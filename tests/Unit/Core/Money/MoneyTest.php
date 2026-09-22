@@ -26,10 +26,10 @@ final class MoneyTest extends TestCase {
 	 */
 	public static function equivalent_two_decimal_amounts(): array {
 		return array(
-			'integer'         => array( '50000' ),
-			'one decimal'     => array( '50000.0' ),
-			'two decimals'    => array( '50000.00' ),
-			'leading zeroes'  => array( '00050000.00' ),
+			'integer'        => array( '50000' ),
+			'one decimal'    => array( '50000.0' ),
+			'two decimals'   => array( '50000.00' ),
+			'leading zeroes' => array( '00050000.00' ),
 		);
 	}
 
@@ -53,14 +53,14 @@ final class MoneyTest extends TestCase {
 	 */
 	public static function malformed_amounts(): array {
 		return array(
-			'negative'          => array( '-1.00' ),
-			'positive sign'     => array( '+1.00' ),
-			'exponent'          => array( '1e3' ),
-			'comma'             => array( '1,000.00' ),
-			'leading space'     => array( ' 1.00' ),
-			'trailing space'    => array( '1.00 ' ),
-			'decimal only'      => array( '.50' ),
-			'trailing decimal'  => array( '1.' ),
+			'negative'         => array( '-1.00' ),
+			'positive sign'    => array( '+1.00' ),
+			'exponent'         => array( '1e3' ),
+			'comma'            => array( '1,000.00' ),
+			'leading space'    => array( ' 1.00' ),
+			'trailing space'   => array( '1.00 ' ),
+			'decimal only'     => array( '.50' ),
+			'trailing decimal' => array( '1.' ),
 		);
 	}
 

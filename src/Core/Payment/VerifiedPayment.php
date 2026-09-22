@@ -21,31 +21,67 @@ use InvalidArgumentException;
  * adapter never needs to trust browser or provider metadata directly.
  */
 final class VerifiedPayment {
-	/** @var string Local payment intent UUID. */
+	/**
+	 * Local payment intent UUID.
+	 *
+	 * @var string
+	 */
 	private string $intent_uuid;
 
-	/** @var string Integration identifier. */
+	/**
+	 * Integration identifier.
+	 *
+	 * @var string
+	 */
 	private string $integration;
 
-	/** @var string Host object type. */
+	/**
+	 * Host object type.
+	 *
+	 * @var string
+	 */
 	private string $local_object_type;
 
-	/** @var string Host object identifier. */
+	/**
+	 * Host object identifier.
+	 *
+	 * @var string
+	 */
 	private string $local_object_id;
 
-	/** @var string Opaque local/provider correlation reference. */
+	/**
+	 * Opaque local/provider correlation reference.
+	 *
+	 * @var string
+	 */
 	private string $reference;
 
-	/** @var string Provider event identifier. */
+	/**
+	 * Provider event identifier.
+	 *
+	 * @var string
+	 */
 	private string $provider_event_id;
 
-	/** @var string Provider checkout identifier. */
+	/**
+	 * Provider checkout identifier.
+	 *
+	 * @var string
+	 */
 	private string $checkout_id;
 
-	/** @var string Authoritative successful provider charge/payment identifier. */
+	/**
+	 * Authoritative successful provider charge/payment identifier.
+	 *
+	 * @var string
+	 */
 	private string $charge_id;
 
-	/** @var Money Authoritatively paid amount and currency. */
+	/**
+	 * Authoritatively paid amount and currency.
+	 *
+	 * @var Money
+	 */
 	private Money $amount;
 
 	/**
@@ -217,6 +253,7 @@ final class VerifiedPayment {
 	 */
 	private static function assert_non_empty( string $value, string $label ): void {
 		if ( '' === $value || trim( $value ) !== $value ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Domain exception text is not rendered output.
 			throw new InvalidArgumentException( $label . ' must be non-empty and must not contain surrounding whitespace.' );
 		}
 	}
