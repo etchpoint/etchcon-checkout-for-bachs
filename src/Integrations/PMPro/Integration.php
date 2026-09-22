@@ -48,11 +48,11 @@ final class Integration {
 	/**
 	 * Hide local card fields because Bachs uses hosted checkout.
 	 *
-	 * @param bool $include Whether PMPro would normally render payment fields.
+	 * @param bool $should_include Whether PMPro would normally render payment fields.
 	 * @return bool
 	 */
-	public static function include_payment_information_fields( bool $include ): bool {
-		return self::is_active_gateway() ? false : $include;
+	public static function include_payment_information_fields( bool $should_include ): bool {
+		return self::is_active_gateway() ? false : $should_include;
 	}
 
 	/**

@@ -12,7 +12,7 @@ use Etchpoint\BachsIntegrations\Integrations\PMPro\PMProGatewayRuntime;
 /**
  * Exposes Bachs through Paid Memberships Pro's supported gateway class API.
  */
-final class PMProGateway_bachs extends PMProGateway {
+final class PMProGateway_Bachs extends PMProGateway {
 	/**
 	 * Create the PMPro Bachs gateway object.
 	 *
