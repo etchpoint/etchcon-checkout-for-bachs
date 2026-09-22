@@ -19,7 +19,6 @@ use Etchpoint\BachsIntegrations\Core\Payment\PaymentIntent;
 use Etchpoint\BachsIntegrations\Persistence\CheckoutIntentStore;
 use Etchpoint\BachsIntegrations\Persistence\IntentRecord;
 use Etchpoint\BachsIntegrations\Integrations\WooCommerce\WooCheckoutCoordinator;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -238,8 +237,8 @@ final class WooCheckoutCoordinatorTest extends TestCase {
 	/**
 	 * Create a deterministic coordinator for unit tests.
 	 *
-	 * @param CheckoutIntentStore&MockObject $intents   Intent store mock.
-	 * @param CheckoutProvider&MockObject    $checkouts Checkout provider mock.
+	 * @param CheckoutIntentStore $intents   Intent store mock.
+	 * @param CheckoutProvider    $checkouts Checkout provider mock.
 	 * @return WooCheckoutCoordinator
 	 */
 	private static function coordinator(

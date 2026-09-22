@@ -25,7 +25,7 @@ final class RuntimeConfigurationTest extends TestCase {
 	 * @return void
 	 */
 	public function test_payment_readiness_requires_key_and_webhook_secret(): void {
-		$ready = new RuntimeConfiguration(
+		$ready          = new RuntimeConfiguration(
 			Environment::SANDBOX,
 			'sk_sandbox_example',
 			array( 'whsec_primary' )
