@@ -115,9 +115,9 @@ final class PMProGatewayRuntime {
 	 * duration of this redirect so WordPress can use wp_safe_redirect().
 	 *
 	 * @param string $url Validated Bachs hosted checkout URL.
-	 * @return void
+	 * @return never
 	 */
-	private static function redirect_to_bachs_checkout( string $url ): void {
+	private static function redirect_to_bachs_checkout( string $url ): never {
 		add_filter( 'allowed_redirect_hosts', array( self::class, 'allow_bachs_checkout_host' ) );
 		wp_safe_redirect( $url );
 		remove_filter( 'allowed_redirect_hosts', array( self::class, 'allow_bachs_checkout_host' ) );
