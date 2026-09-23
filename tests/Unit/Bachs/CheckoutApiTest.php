@@ -117,6 +117,82 @@ final class CheckoutApiTest extends TestCase {
 	}
 
 	/**
+	 * Provider responses cannot redirect customers to an arbitrary origin.
+	 *
+	 * @return void
+	 */
+	public function test_create_rejects_untrusted_checkout_origin(): void {
+		$requester = new RecordingRequester(
+			array(
+				'checkout_id'  => 'chk_123',
+				'checkout_url' => 'https://checkout.bachs.io.attacker.example/c/test',
+				'status'       => 'open',
+			)
+		);
+		$api       = new CheckoutApi( $requester );
+
+		$this->expectException( \InvalidArgumentException::class );
+		$api->create_raw_checkout(
+			self::intent(),
+			'https://merchant.example/success',
+			'https://merchant.example/cancel'
+		);
+	}
+
+	/**
+	 * Live checkout return URLs must not use cleartext HTTP.
+	 *
+	 * @return void
+	 */
+	public function test_live_checkout_rejects_http_return_url(): void {
+		$requester = new RecordingRequester(
+			array(
+				'checkout_id'  => 'chk_123',
+				'checkout_url' => 'https://checkout.bachs.io/c/test',
+				'status'       => 'open',
+			),
+			Environment::LIVE
+		);
+		$api       = new CheckoutApi( $requester );
+		$intent    = PaymentIntent::create(
+			'123e4567-e89b-42d3-a456-426614174001',
+			'woocommerce',
+			'order',
+			'1848',
+			PaymentIntent::ENVIRONMENT_LIVE,
+			'etp_bch_live_ref',
+			'etp:site:woo:1848:checkout:1',
+			Money::from_decimal( '50000', Currency::from_code( 'NGN' ) )
+		);
+
+		$this->expectException( \InvalidArgumentException::class );
+		$api->create_raw_checkout(
+			$intent,
+			'http://merchant.example/success',
+			'https://merchant.example/cancel'
+		);
+	}
+
+	/**
+	 * Retrieved open sessions cannot introduce an arbitrary redirect origin.
+	 *
+	 * @return void
+	 */
+	public function test_get_rejects_untrusted_checkout_origin(): void {
+		$requester = new RecordingRequester(
+			array(
+				'checkout_id'  => 'chk_123',
+				'checkout_url' => 'https://evil.example/c/test',
+				'status'       => 'open',
+			)
+		);
+		$api       = new CheckoutApi( $requester );
+
+		$this->expectException( \InvalidArgumentException::class );
+		$api->get( 'chk_123' );
+	}
+
+	/**
 	 * Checkout retrieval uses the documented checkout-session resource path.
 	 *
 	 * @return void

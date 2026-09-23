@@ -138,6 +138,10 @@ final class RefundRequestService {
 			throw self::request_exception( 'Authoritative Bachs payment state does not match the local payment.', RefundRequestException::REQUIRES_REVIEW );
 		}
 
+		if ( true !== $provider_payment->is_refundable() ) {
+			throw self::request_exception( 'Bachs reports that this payment is not currently refundable.', RefundRequestException::INVALID_REQUEST );
+		}
+
 		try {
 			$provider_amount = Money::from_decimal( $provider_payment->amount(), $intent->expected_amount()->currency() );
 		} catch ( InvalidArgumentException ) {

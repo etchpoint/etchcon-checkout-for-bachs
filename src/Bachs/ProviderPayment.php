@@ -44,6 +44,13 @@ final class ProviderPayment {
 	private string $currency;
 
 	/**
+	 * Whether Bachs currently permits a refund for this payment.
+	 *
+	 * @var bool|null
+	 */
+	private ?bool $is_refundable;
+
+	/**
 	 * Amount received so far when available.
 	 *
 	 * @var string|null
@@ -85,6 +92,7 @@ final class ProviderPayment {
 		$instance->status           = self::required_string( $data, 'status' );
 		$instance->amount           = self::required_string( $data, 'amount' );
 		$instance->currency         = self::required_string( $data, 'currency' );
+		$instance->is_refundable    = self::optional_bool( $data, 'is_refundable' );
 		$instance->amount_paid      = self::optional_string( $data, 'amount_paid' );
 		$instance->amount_remaining = self::optional_string( $data, 'amount_remaining' );
 		$instance->reference        = self::optional_string( $data, 'reference' );
@@ -127,6 +135,15 @@ final class ProviderPayment {
 	 */
 	public function currency(): string {
 		return $this->currency;
+	}
+
+	/**
+	 * Get whether Bachs currently permits a refund.
+	 *
+	 * @return bool|null
+	 */
+	public function is_refundable(): ?bool {
+		return $this->is_refundable;
 	}
 
 	/**
@@ -195,5 +212,18 @@ final class ProviderPayment {
 		$value = $data[ $key ] ?? null;
 
 		return is_string( $value ) ? $value : null;
+	}
+
+	/**
+	 * Read an optional boolean field.
+	 *
+	 * @param array<string, mixed> $data Response data.
+	 * @param string               $key  Field key.
+	 * @return bool|null
+	 */
+	private static function optional_bool( array $data, string $key ): ?bool {
+		$value = $data[ $key ] ?? null;
+
+		return is_bool( $value ) ? $value : null;
 	}
 }

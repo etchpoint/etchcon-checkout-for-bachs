@@ -59,8 +59,8 @@ final class CheckoutApi implements CheckoutProvider {
 		string $cancel_url,
 		array $metadata = array()
 	): CheckoutSession {
-		self::assert_http_url( $success_url, 'Success URL' );
-		self::assert_http_url( $cancel_url, 'Cancel URL' );
+		$this->assert_return_url( $success_url, 'Success URL' );
+		$this->assert_return_url( $cancel_url, 'Cancel URL' );
 
 		if ( $intent->environment() !== $this->client->environment()->value ) {
 			throw new InvalidArgumentException( 'Payment intent environment does not match the Bachs API client environment.' );
@@ -91,9 +91,12 @@ final class CheckoutApi implements CheckoutProvider {
 			'reference'   => $intent->reference(),
 			'metadata'    => $metadata,
 		);
-		$data = $this->client->post( Endpoints::CHECKOUT_SESSIONS, $body, $intent->idempotency_key() );
+		$data    = $this->client->post( Endpoints::CHECKOUT_SESSIONS, $body, $intent->idempotency_key() );
+		$session = CheckoutSession::from_api_response( $data );
 
-		return CheckoutSession::from_api_response( $data );
+		self::assert_hosted_checkout_url( $session->checkout_url(), true );
+
+		return $session;
 	}
 
 	/**
@@ -105,27 +108,80 @@ final class CheckoutApi implements CheckoutProvider {
 	 * @throws ApiException When Bachs rejects or cannot process the request.
 	 */
 	public function get( string $checkout_id ): CheckoutSession {
-		$data = $this->client->get( Endpoints::checkout_session( $checkout_id ) );
+		$data    = $this->client->get( Endpoints::checkout_session( $checkout_id ) );
+		$session = CheckoutSession::from_api_response( $data );
 
-		return CheckoutSession::from_api_response( $data );
+		self::assert_hosted_checkout_url( $session->checkout_url(), false );
+
+		return $session;
 	}
 
 	/**
-	 * Validate a browser return URL without allowing arbitrary schemes.
+	 * Validate a browser return URL without allowing unsafe production transport.
+	 *
+	 * Sandbox may use HTTP for local development. Live checkout returns must use HTTPS.
 	 *
 	 * @param string $url   URL to validate.
 	 * @param string $label Human-readable field label.
 	 * @return void
 	 *
-	 * @throws InvalidArgumentException When the URL is invalid.
+	 * @throws InvalidArgumentException When the URL is invalid or unsafe for the environment.
 	 */
-	private static function assert_http_url( string $url, string $label ): void {
-		$has_http_scheme = str_starts_with( $url, 'http://' ) || str_starts_with( $url, 'https://' );
+	private function assert_return_url( string $url, string $label ): void {
+		// Native parsing keeps this value object usable in isolated unit tests without bootstrapping WordPress.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
+		$parts  = parse_url( $url );
+		$scheme = is_array( $parts ) && isset( $parts['scheme'] ) && is_string( $parts['scheme'] )
+			? strtolower( $parts['scheme'] )
+			: '';
 
-		if ( false === filter_var( $url, FILTER_VALIDATE_URL ) || ! $has_http_scheme ) {
+		if ( false === filter_var( $url, FILTER_VALIDATE_URL ) || ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
 			// Exception text is not rendered output.
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new InvalidArgumentException( $label . ' must be a valid HTTP or HTTPS URL.' );
+		}
+
+		if ( Environment::LIVE === $this->client->environment() && 'https' !== $scheme ) {
+			// Exception text is not rendered output.
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			throw new InvalidArgumentException( $label . ' must use HTTPS in live mode.' );
+		}
+	}
+
+	/**
+	 * Reject provider supplied redirect URLs outside the documented Bachs checkout origin.
+	 *
+	 * @param string|null $url      Hosted checkout URL returned by Bachs.
+	 * @param bool        $required Whether the response must include a checkout URL.
+	 * @return void
+	 *
+	 * @throws InvalidArgumentException When the checkout URL is absent or untrusted.
+	 */
+	private static function assert_hosted_checkout_url( ?string $url, bool $required ): void {
+		if ( null === $url || '' === $url ) {
+			if ( $required ) {
+				// Exception text is not rendered output.
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+				throw new InvalidArgumentException( 'Bachs checkout response is missing the hosted checkout URL.' );
+			}
+
+			return;
+		}
+
+		// Native parsing keeps this value object usable in isolated unit tests without bootstrapping WordPress.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
+		$parts = parse_url( $url );
+		$valid = is_array( $parts )
+			&& 'https' === strtolower( (string) ( $parts['scheme'] ?? '' ) )
+			&& 'checkout.bachs.io' === strtolower( (string) ( $parts['host'] ?? '' ) )
+			&& ! isset( $parts['user'] )
+			&& ! isset( $parts['pass'] )
+			&& ( ! isset( $parts['port'] ) || 443 === (int) $parts['port'] );
+
+		if ( ! $valid ) {
+			// Exception text is not rendered output.
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			throw new InvalidArgumentException( 'Bachs checkout response contained an untrusted hosted checkout URL.' );
 		}
 	}
 

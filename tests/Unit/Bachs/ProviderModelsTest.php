@@ -55,6 +55,7 @@ final class ProviderModelsTest extends TestCase {
 				'amount_paid'      => '75000.00',
 				'amount_remaining' => '0.00',
 				'currency'         => 'NGN',
+				'is_refundable'    => true,
 				'reference'        => 'ref_123',
 				'checkout_id'      => 'chk_123',
 			)
@@ -63,6 +64,7 @@ final class ProviderModelsTest extends TestCase {
 		self::assertSame( 'pay_123', $payment->payment_id() );
 		self::assertSame( '75000.00', $payment->amount_paid() );
 		self::assertSame( 'NGN', $payment->currency() );
+		self::assertTrue( $payment->is_refundable() );
 		self::assertSame( 'chk_123', $payment->checkout_id() );
 	}
 
