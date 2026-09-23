@@ -260,11 +260,11 @@ final class SettingsPage {
 	 *
 	 * @param array<string, string> $settings Settings array.
 	 * @param string                $key      Setting key.
-	 * @param string                $default  Default value.
+	 * @param string                $fallback Default value.
 	 * @return string
 	 */
-	private static function setting( array $settings, string $key, string $default ): string {
-		return isset( $settings[ $key ] ) ? $settings[ $key ] : $default;
+	private static function setting( array $settings, string $key, string $fallback ): string {
+		return isset( $settings[ $key ] ) ? $settings[ $key ] : $fallback;
 	}
 
 	/**
