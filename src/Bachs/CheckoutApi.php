@@ -81,7 +81,7 @@ final class CheckoutApi implements CheckoutProvider {
 
 		self::assert_metadata_size( $metadata );
 
-		$body    = array(
+		$body = array(
 			'pricing'     => array(
 				'currency' => $intent->expected_amount()->currency()->code(),
 				'amount'   => $intent->expected_amount()->amount(),
@@ -131,7 +131,7 @@ final class CheckoutApi implements CheckoutProvider {
 		// Native parsing keeps this value object usable in isolated unit tests without bootstrapping WordPress.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
 		$parts  = parse_url( $url );
-		$scheme = is_array( $parts ) && isset( $parts['scheme'] ) && is_string( $parts['scheme'] )
+		$scheme = is_array( $parts ) && isset( $parts['scheme'] )
 			? strtolower( $parts['scheme'] )
 			: '';
 
