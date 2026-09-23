@@ -48,6 +48,63 @@ final class WebhookSignatureVerifierTest extends TestCase {
 	}
 
 	/**
+	 * A valid legacy signature and timestamp pair is accepted.
+	 *
+	 * @return void
+	 */
+	public function test_valid_legacy_signature_is_accepted(): void {
+		$verifier = $this->verifier();
+		$verified = $verifier->verify_legacy(
+			self::RAW_BODY,
+			self::SIGNATURE,
+			(string) self::NOW,
+			self::SECRET
+		);
+
+		self::assertSame( self::NOW, $verified->timestamp() );
+		self::assertSame( hash( 'sha256', self::RAW_BODY ), $verified->payload_hash() );
+	}
+
+	/**
+	 * The legacy signature also accepts an explicit v1 prefix.
+	 *
+	 * @return void
+	 */
+	public function test_legacy_v1_prefix_is_accepted(): void {
+		$verifier = $this->verifier();
+		$verified = $verifier->verify_legacy(
+			self::RAW_BODY,
+			'v1=' . self::SIGNATURE,
+			(string) self::NOW,
+			self::SECRET
+		);
+
+		self::assertSame( self::NOW, $verified->timestamp() );
+	}
+
+	/**
+	 * A stale legacy delivery is rejected using the same replay window.
+	 *
+	 * @return void
+	 */
+	public function test_stale_legacy_signature_is_rejected(): void {
+		$timestamp = self::NOW - 301;
+		$signature = hash_hmac( 'sha256', $timestamp . '.' . self::RAW_BODY, self::SECRET );
+
+		try {
+			$this->verifier()->verify_legacy(
+				self::RAW_BODY,
+				$signature,
+				(string) $timestamp,
+				self::SECRET
+			);
+			self::fail( 'Expected a webhook verification exception.' );
+		} catch ( WebhookVerificationException $exception ) {
+			self::assertSame( WebhookVerificationException::CODE_STALE_TIMESTAMP, $exception->reason() );
+		}
+	}
+
+	/**
 	 * Rotation headers accept a match against any repeated v1 signature.
 	 *
 	 * @return void

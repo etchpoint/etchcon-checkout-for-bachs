@@ -34,8 +34,9 @@ Recurring payments and subscriptions are not included in version 1.0.0.
 3. Open Bachs Payments > Settings and choose Sandbox or Live.
 4. Enter the matching Bachs secret API key and webhook signing secret, then save.
 5. Copy the webhook endpoint shown on the settings screen into your Bachs webhook configuration.
-6. Enable Bachs in the supported WordPress integration you want to use.
-7. Use sandbox mode first and confirm checkout, webhook completion, and reconciliation before switching to live mode.
+6. Subscribe the endpoint to `collection.succeeded`, `collection.failed`, `collection.underpaid`, `checkout.expired`, `refund.paid`, and `refund.failed`.
+7. Enable Bachs in the supported WordPress integration you want to use.
+8. Use sandbox mode first and confirm checkout, webhook completion, and reconciliation before switching to live mode.
 
 == Configuration ==
 

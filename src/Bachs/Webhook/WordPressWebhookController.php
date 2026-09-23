@@ -112,13 +112,23 @@ final class WordPressWebhookController {
 			return self::response( 413, 'request_too_large' );
 		}
 
-		$signature_header = $request->get_header( 'x-bachs-signature-v2' );
+		$signature_v2 = self::first_header( $request, array( 'x-bachs-signature-v2', 'bachs-signature-v2' ) );
 
-		if ( null === $signature_header || '' === $signature_header ) {
-			return self::response( 401, 'signature_required' );
+		$signature          = self::first_header( $request, array( 'x-bachs-signature', 'bachs-signature' ) );
+		$timestamp          = self::first_header( $request, array( 'x-bachs-timestamp', 'bachs-timestamp' ) );
+		$verified_signature = null;
+
+		if ( null !== $signature_v2 ) {
+			$verified_signature = $this->verify_v2_with_active_secret( $raw_body, $signature_v2 );
 		}
 
-		$verified_signature = $this->verify_with_active_secret( $raw_body, $signature_header );
+		if ( null === $verified_signature && null !== $signature && null !== $timestamp ) {
+			$verified_signature = $this->verify_legacy_with_active_secret( $raw_body, $signature, $timestamp );
+		}
+
+		if ( null === $signature_v2 && ( null === $signature || null === $timestamp ) ) {
+			return self::response( 401, 'signature_required' );
+		}
 
 		if ( null === $verified_signature ) {
 			return self::response( 401, 'signature_invalid' );
@@ -220,7 +230,7 @@ final class WordPressWebhookController {
 	 * @param string $signature_header Bachs V2 signature header.
 	 * @return VerifiedWebhookSignature|null
 	 */
-	private function verify_with_active_secret(
+	private function verify_v2_with_active_secret(
 		string $raw_body,
 		string $signature_header
 	): ?VerifiedWebhookSignature {
@@ -229,6 +239,49 @@ final class WordPressWebhookController {
 				return $this->verifier->verify( $raw_body, $signature_header, $secret );
 			} catch ( WebhookVerificationException ) {
 				continue;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Verify a legacy signature against every active secret during rotation.
+	 *
+	 * @param string $raw_body         Exact raw request body.
+	 * @param string $signature_header Legacy signature header.
+	 * @param string $timestamp_header Legacy timestamp header.
+	 * @return VerifiedWebhookSignature|null
+	 */
+	private function verify_legacy_with_active_secret(
+		string $raw_body,
+		string $signature_header,
+		string $timestamp_header
+	): ?VerifiedWebhookSignature {
+		foreach ( $this->signing_secrets as $secret ) {
+			try {
+				return $this->verifier->verify_legacy( $raw_body, $signature_header, $timestamp_header, $secret );
+			} catch ( WebhookVerificationException ) {
+				continue;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Return the first non-empty request header from a list of compatible names.
+	 *
+	 * @param WP_REST_Request   $request Incoming REST request.
+	 * @param array<int, string> $names   Candidate header names.
+	 * @return string|null
+	 */
+	private static function first_header( WP_REST_Request $request, array $names ): ?string {
+		foreach ( $names as $name ) {
+			$value = $request->get_header( $name );
+
+			if ( null !== $value && '' !== trim( $value ) ) {
+				return trim( $value );
 			}
 		}
 

@@ -53,6 +53,8 @@ final class Integration {
 
 		add_filter( 'woocommerce_payment_gateways', array( self::class, 'add_gateway' ) );
 		add_action( 'woocommerce_api_' . BrowserReturnController::ENDPOINT, array( BrowserReturnController::class, 'handle' ) );
+		add_filter( 'woocommerce_thankyou_order_received_text', array( BrowserReturnController::class, 'filter_order_received_text' ), 10, 2 );
+		add_action( 'woocommerce_thankyou_' . Gateway::ID, array( BrowserReturnController::class, 'render_confirmation_status' ) );
 		add_action(
 			'woocommerce_blocks_payment_method_type_registration',
 			array( self::class, 'register_blocks_payment_method' )

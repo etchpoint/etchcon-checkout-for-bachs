@@ -98,6 +98,7 @@ final class SettingsPage {
 							<td>
 								<input id="etchpoint-bachs-webhook-url" type="url" class="large-text code" value="<?php echo esc_attr( $webhook_url ); ?>" readonly />
 								<p class="description"><?php echo esc_html__( 'Add this URL as the webhook endpoint in Bachs, then paste the webhook signing secret above.', 'payment-integrations-for-bachs' ); ?></p>
+								<p class="description"><?php echo esc_html__( 'Subscribe to: collection.succeeded, collection.failed, collection.underpaid, checkout.expired, refund.paid and refund.failed.', 'payment-integrations-for-bachs' ); ?></p>
 							</td>
 						</tr>
 					</tbody>
@@ -187,14 +188,28 @@ final class SettingsPage {
 	 * @return void
 	 */
 	private static function render_secret_row( string $name, string $label, string $placeholder, bool $configured, string $constant_name ): void {
-		$field_id = 'etchpoint-bachs-' . str_replace( '_', '-', $name );
+		$field_id         = 'etchpoint-bachs-' . str_replace( '_', '-', $name );
+		$constant_defined = defined( $constant_name );
 		?>
 		<tr>
 			<th scope="row"><label for="<?php echo esc_attr( $field_id ); ?>"><?php echo esc_html( $label ); ?></label></th>
 			<td>
-				<input id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="password" class="regular-text" value="" placeholder="<?php echo esc_attr( $configured ? __( 'Configured. Leave blank to keep current value.', 'payment-integrations-for-bachs' ) : $placeholder ); ?>" autocomplete="new-password" />
-				<?php if ( $configured ) : ?>
-					<p><label><input type="checkbox" name="<?php echo esc_attr( 'clear_' . $name ); ?>" value="1" /> <?php echo esc_html__( 'Clear saved value', 'payment-integrations-for-bachs' ); ?></label></p>
+				<?php if ( $constant_defined ) : ?>
+					<p><strong><?php echo esc_html__( 'Managed in wp-config.php', 'payment-integrations-for-bachs' ); ?></strong></p>
+					<p class="description"><?php echo esc_html__( 'This value is already configured outside WordPress and does not need to be entered here.', 'payment-integrations-for-bachs' ); ?></p>
+				<?php elseif ( $configured ) : ?>
+					<p><strong><?php echo esc_html__( 'Configured', 'payment-integrations-for-bachs' ); ?></strong></p>
+					<p class="description"><?php echo esc_html__( 'The saved value is hidden and will continue to be used. You do not need to enter it again.', 'payment-integrations-for-bachs' ); ?></p>
+					<details>
+						<summary><?php echo esc_html__( 'Replace or remove', 'payment-integrations-for-bachs' ); ?></summary>
+						<p>
+							<input id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="password" class="regular-text" value="" placeholder="<?php echo esc_attr( $placeholder ); ?>" autocomplete="new-password" />
+						</p>
+						<p class="description"><?php echo esc_html__( 'Enter a new value only if you want to replace the one currently saved.', 'payment-integrations-for-bachs' ); ?></p>
+						<p><label><input type="checkbox" name="<?php echo esc_attr( 'clear_' . $name ); ?>" value="1" /> <?php echo esc_html__( 'Remove the saved value', 'payment-integrations-for-bachs' ); ?></label></p>
+					</details>
+				<?php else : ?>
+					<input id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="password" class="regular-text" value="" placeholder="<?php echo esc_attr( $placeholder ); ?>" autocomplete="new-password" />
 				<?php endif; ?>
 				<?php self::render_constant_note( $constant_name ); ?>
 			</td>
@@ -245,11 +260,11 @@ final class SettingsPage {
 	 *
 	 * @param array<string, string> $settings Settings array.
 	 * @param string                $key      Setting key.
-	 * @param string                $fallback Default value.
+	 * @param string                $default  Default value.
 	 * @return string
 	 */
-	private static function setting( array $settings, string $key, string $fallback ): string {
-		return isset( $settings[ $key ] ) ? $settings[ $key ] : $fallback;
+	private static function setting( array $settings, string $key, string $default ): string {
+		return isset( $settings[ $key ] ) ? $settings[ $key ] : $default;
 	}
 
 	/**

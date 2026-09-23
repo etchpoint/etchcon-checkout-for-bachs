@@ -1,6 +1,6 @@
 <?php
 /**
- * Bachs V2 webhook signature verifier.
+ * Bachs webhook signature verifier.
  *
  * @package Etchpoint\BachsIntegrations
  */
@@ -13,7 +13,7 @@ use Closure;
 use InvalidArgumentException;
 
 /**
- * Verifies X-Bachs-Signature-V2 against the exact raw request body.
+ * Verifies current and legacy Bachs webhook signatures against the exact raw body.
  */
 final class WebhookSignatureVerifier {
 	/** Default replay-protection tolerance in seconds. */
@@ -114,6 +114,84 @@ final class WebhookSignatureVerifier {
 	}
 
 	/**
+	 * Verify the legacy Bachs signature headers without parsing the JSON body.
+	 *
+	 * @param string $raw_body         Exact untouched HTTP request body.
+	 * @param string $signature_header X-Bachs-Signature header value.
+	 * @param string $timestamp_header X-Bachs-Timestamp header value.
+	 * @param string $signing_secret   Endpoint signing secret exactly as configured by Bachs.
+	 * @return VerifiedWebhookSignature
+	 *
+	 * @throws WebhookVerificationException When the header, freshness, secret, or HMAC check fails.
+	 */
+	public function verify_legacy(
+		string $raw_body,
+		string $signature_header,
+		string $timestamp_header,
+		string $signing_secret
+	): VerifiedWebhookSignature {
+		if ( '' === $signing_secret ) {
+			// Exception fields are internal verification data, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			throw new WebhookVerificationException(
+				WebhookVerificationException::CODE_INVALID_SECRET,
+				'Bachs webhook signing secret is not configured.'
+			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+		}
+
+		$timestamp_string = trim( $timestamp_header );
+
+		if ( ! self::is_canonical_timestamp( $timestamp_string ) ) {
+			throw self::malformed_header_exception();
+		}
+
+		$timestamp = (int) $timestamp_string;
+		$now       = ( $this->clock )();
+
+		if ( abs( $now - $timestamp ) > $this->tolerance_seconds ) {
+			// Exception fields are internal verification data, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			throw new WebhookVerificationException(
+				WebhookVerificationException::CODE_STALE_TIMESTAMP,
+				'Bachs webhook signature timestamp is outside the accepted freshness window.'
+			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+		}
+
+		$signature = strtolower( trim( $signature_header ) );
+
+		if ( str_starts_with( $signature, 'v1=' ) ) {
+			$signature = substr( $signature, 3 );
+		} elseif ( str_starts_with( $signature, 'v1,' ) ) {
+			$signature = substr( $signature, 3 );
+		}
+
+		if ( 1 !== preg_match( '/\A[0-9a-f]{64}\z/', $signature ) ) {
+			throw self::malformed_header_exception();
+		}
+
+		$expected = hash_hmac(
+			'sha256',
+			$timestamp_string . '.' . $raw_body,
+			$signing_secret
+		);
+
+		if ( ! hash_equals( $expected, $signature ) ) {
+			// Exception fields are internal verification data, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			throw new WebhookVerificationException(
+				WebhookVerificationException::CODE_SIGNATURE_MISMATCH,
+				'Bachs webhook signature did not match the request body.'
+			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+		}
+
+		return new VerifiedWebhookSignature( $timestamp, hash( 'sha256', $raw_body ) );
+	}
+
+
+	/**
 	 * Parse a V2 signature header while preserving repeated v1 values.
 	 *
 	 * @param string $header X-Bachs-Signature-V2 header value.
@@ -194,7 +272,7 @@ final class WebhookSignatureVerifier {
 	private static function malformed_header_exception(): WebhookVerificationException {
 		return new WebhookVerificationException(
 			WebhookVerificationException::CODE_MALFORMED_HEADER,
-			'Bachs V2 webhook signature header is malformed.'
+			'Bachs webhook signature header is malformed.'
 		);
 	}
 }
