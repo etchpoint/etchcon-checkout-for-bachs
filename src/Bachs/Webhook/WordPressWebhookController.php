@@ -101,7 +101,7 @@ final class WordPressWebhookController {
 	/**
 	 * Process one WordPress REST webhook request.
 	 *
-	 * @param WP_REST_Request $request Incoming REST request.
+	 * @param WP_REST_Request    $request Incoming REST request.
 	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
 	 * @return WP_REST_Response
 	 */
@@ -272,7 +272,7 @@ final class WordPressWebhookController {
 	/**
 	 * Return the first non-empty request header from a list of compatible names.
 	 *
-	 * @param WP_REST_Request   $request Incoming REST request.
+	 * @param WP_REST_Request    $request Incoming REST request.
 	 * @param array<int, string> $names   Candidate header names.
 	 * @return string|null
 	 */

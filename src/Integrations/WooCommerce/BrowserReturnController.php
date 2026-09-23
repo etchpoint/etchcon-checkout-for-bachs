@@ -80,8 +80,8 @@ final class BrowserReturnController {
 	/**
 	 * Replace WooCommerce's generic received text while Bachs is still confirming.
 	 *
-	 * @param string        $text  Existing WooCommerce order-received text.
-	 * @param mixed $order WooCommerce order when available.
+	 * @param string $text   Existing WooCommerce order-received text.
+	 * @param mixed  $order  WooCommerce order when available.
 	 * @return string
 	 */
 	public static function filter_order_received_text( string $text, mixed $order ): string {
@@ -153,7 +153,7 @@ final class BrowserReturnController {
 	/**
 	 * Determine whether this request is the pending Bachs browser return.
 	 *
-	 * @param mixed $order WooCommerce order when available.
+	 * @param mixed  $order  WooCommerce order when available.
 	 * @return bool
 	 */
 	private static function is_pending_bachs_return( mixed $order ): bool {

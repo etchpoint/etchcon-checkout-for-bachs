@@ -62,8 +62,8 @@ final class WebhookSignatureVerifier {
 	 * @return VerifiedWebhookSignature
 	 *
 	 * @throws WebhookVerificationException When the signing secret is missing or invalid.
- * @throws WebhookVerificationException When the signature timestamp is outside the freshness window.
- * @throws WebhookVerificationException When the signature does not match the request body.
+	 * @throws WebhookVerificationException When the signature timestamp is outside the freshness window.
+	 * @throws WebhookVerificationException When the signature does not match the request body.
 	 */
 	public function verify(
 		string $raw_body,
@@ -125,8 +125,8 @@ final class WebhookSignatureVerifier {
 	 * @return VerifiedWebhookSignature
 	 *
 	 * @throws WebhookVerificationException When the signing secret is missing or invalid.
- * @throws WebhookVerificationException When the signature timestamp is outside the freshness window.
- * @throws WebhookVerificationException When the signature does not match the request body.
+	 * @throws WebhookVerificationException When the signature timestamp is outside the freshness window.
+	 * @throws WebhookVerificationException When the signature does not match the request body.
 	 */
 	public function verify_legacy(
 		string $raw_body,
