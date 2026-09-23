@@ -72,13 +72,15 @@ final class FluentFormsProcessor extends BaseProcessor {
 	/**
 	 * Create a pending Fluent transaction and redirect to hosted Bachs checkout.
 	 *
-	 * @param int                    $submission_id   Fluent Forms submission identifier.
-	 * @param array<string, mixed>   $submission_data Submitted form data.
-	 * @param object                 $form            Fluent Forms form object.
-	 * @param array<string, mixed>   $method_settings Selected payment method settings.
-	 * @param bool                   $has_subscription Whether the submission contains subscriptions.
-	 * @param int                    $total_payable   Trusted Fluent Forms total in minor units.
+	 * @param int                  $submission_id   Fluent Forms submission identifier.
+	 * @param array<string, mixed> $submission_data Submitted form data.
+	 * @param object               $form            Fluent Forms form object.
+	 * @param array<string, mixed> $method_settings Selected payment method settings.
+	 * @param bool                 $has_subscription Whether the submission contains subscriptions.
+	 * @param int                  $total_payable   Trusted Fluent Forms total in minor units.
 	 * @return void
+	 *
+	 * @throws RuntimeException When checkout initialization cannot proceed.
 	 */
 	public function handlePaymentAction( $submission_id, $submission_data, $form, $method_settings, $has_subscription = false, $total_payable = 0 ) {
 		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
