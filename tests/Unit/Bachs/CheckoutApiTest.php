@@ -43,7 +43,11 @@ final class CheckoutApiTest extends TestCase {
 			$intent,
 			'https://merchant.example/success',
 			'https://merchant.example/cancel',
-			array( 'purpose' => 'checkout' )
+			array( 'purpose' => 'checkout' ),
+			array(
+				'email' => 'buyer@example.com',
+				'name'  => 'Ada Buyer',
+			)
 		);
 
 		$body = $requester->last_body();
@@ -53,6 +57,8 @@ final class CheckoutApiTest extends TestCase {
 		self::assertSame( '50000.00', $body['pricing']['amount'] ?? null );
 		self::assertSame( 'NGN', $body['pricing']['currency'] ?? null );
 		self::assertSame( 'etp_bch_ref', $body['reference'] ?? null );
+		self::assertSame( 'buyer@example.com', $body['customer']['email'] ?? null );
+		self::assertSame( 'Ada Buyer', $body['customer']['name'] ?? null );
 		self::assertArrayNotHasKey( 'product_cart', $body );
 		self::assertArrayNotHasKey( 'currency_options', $body['pricing'] ?? array() );
 		self::assertSame( 'woocommerce', $body['metadata']['integration'] ?? null );

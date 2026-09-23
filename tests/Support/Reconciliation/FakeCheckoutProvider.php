@@ -40,15 +40,17 @@ final class FakeCheckoutProvider implements CheckoutProvider {
 	 * @param string                $success_url Success URL.
 	 * @param string                $cancel_url  Cancel URL.
 	 * @param array<string, string> $metadata    Checkout metadata.
+	 * @param array<string, string> $customer    Inline customer details.
 	 * @return CheckoutSession
 	 */
 	public function create_raw_checkout(
 		PaymentIntent $intent,
 		string $success_url,
 		string $cancel_url,
-		array $metadata = array()
+		array $metadata = array(),
+		array $customer = array()
 	): CheckoutSession {
-		unset( $intent, $success_url, $cancel_url, $metadata );
+		unset( $intent, $success_url, $cancel_url, $metadata, $customer );
 
 		return $this->checkout;
 	}

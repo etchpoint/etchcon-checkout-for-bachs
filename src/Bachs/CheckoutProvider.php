@@ -22,13 +22,15 @@ interface CheckoutProvider {
 	 * @param string                $success_url Browser success destination.
 	 * @param string                $cancel_url  Browser cancellation destination.
 	 * @param array<string, string> $metadata    Optional non-sensitive metadata.
+	 * @param array<string, string> $customer    Optional inline customer details.
 	 * @return CheckoutSession
 	 */
 	public function create_raw_checkout(
 		PaymentIntent $intent,
 		string $success_url,
 		string $cancel_url,
-		array $metadata = array()
+		array $metadata = array(),
+		array $customer = array()
 	): CheckoutSession;
 
 	/**

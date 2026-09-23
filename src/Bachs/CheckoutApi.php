@@ -49,6 +49,7 @@ final class CheckoutApi implements CheckoutProvider {
 	 * @param string                $success_url Browser success destination.
 	 * @param string                $cancel_url  Browser cancellation destination.
 	 * @param array<string, string> $metadata    Optional non-sensitive metadata.
+	 * @param array<string, string> $customer    Optional inline customer details.
 	 * @return CheckoutSession
 	 *
 	 * @throws InvalidArgumentException When checkout input or environment validation fails.
@@ -57,7 +58,8 @@ final class CheckoutApi implements CheckoutProvider {
 		PaymentIntent $intent,
 		string $success_url,
 		string $cancel_url,
-		array $metadata = array()
+		array $metadata = array(),
+		array $customer = array()
 	): CheckoutSession {
 		$this->assert_return_url( $success_url, 'Success URL' );
 		$this->assert_return_url( $cancel_url, 'Cancel URL' );
@@ -80,8 +82,9 @@ final class CheckoutApi implements CheckoutProvider {
 		}
 
 		self::assert_metadata_size( $metadata );
+		$customer = self::normalize_customer( $customer );
 
-		$body    = array(
+		$body = array(
 			'pricing'     => array(
 				'currency' => $intent->expected_amount()->currency()->code(),
 				'amount'   => $intent->expected_amount()->amount(),
@@ -91,6 +94,11 @@ final class CheckoutApi implements CheckoutProvider {
 			'reference'   => $intent->reference(),
 			'metadata'    => $metadata,
 		);
+
+		if ( array() !== $customer ) {
+			$body['customer'] = $customer;
+		}
+
 		$data    = $this->client->post( Endpoints::CHECKOUT_SESSIONS, $body, $intent->idempotency_key() );
 		$session = CheckoutSession::from_api_response( $data );
 
@@ -183,6 +191,44 @@ final class CheckoutApi implements CheckoutProvider {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new InvalidArgumentException( 'Bachs checkout response contained an untrusted hosted checkout URL.' );
 		}
+	}
+
+	/**
+	 * Normalize inline customer data for Bachs checkout.
+	 *
+	 * Bachs requires an email address when a new customer is supplied inline.
+	 * An empty array is retained for legacy callers that have not yet supplied customer data.
+	 * Phone numbers are optional but, when present, must already be E.164.
+	 *
+	 * @param array<string, string> $customer Raw customer details.
+	 * @return array<string, string>
+	 *
+	 * @throws InvalidArgumentException When required customer data is missing or invalid.
+	 */
+	private static function normalize_customer( array $customer ): array {
+		if ( array() === $customer ) {
+			return array();
+		}
+
+		$email = isset( $customer['email'] ) ? trim( $customer['email'] ) : '';
+
+		if ( '' === $email || false === filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+			throw new InvalidArgumentException( 'Bachs checkout requires a valid customer email address.' );
+		}
+
+		$normalized = array( 'email' => $email );
+		$name       = isset( $customer['name'] ) ? trim( $customer['name'] ) : '';
+		$phone      = isset( $customer['phone_number'] ) ? trim( $customer['phone_number'] ) : '';
+
+		if ( '' !== $name ) {
+			$normalized['name'] = $name;
+		}
+
+		if ( '' !== $phone && 1 === preg_match( '/\A\+[1-9][0-9]{7,14}\z/D', $phone ) ) {
+			$normalized['phone_number'] = $phone;
+		}
+
+		return $normalized;
 	}
 
 	/**

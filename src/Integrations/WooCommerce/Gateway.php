@@ -10,9 +10,11 @@ declare(strict_types=1);
 namespace Etchpoint\BachsIntegrations\Integrations\WooCommerce;
 
 use Etchpoint\BachsIntegrations\Bachs\ApiClient;
+use Etchpoint\BachsIntegrations\Bachs\ApiException;
 use Etchpoint\BachsIntegrations\Bachs\CheckoutApi;
 use Etchpoint\BachsIntegrations\Bachs\RuntimeConfiguration;
 use Etchpoint\BachsIntegrations\Persistence\IntentRepository;
+use RuntimeException;
 use Throwable;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -124,23 +126,42 @@ final class Gateway extends WC_Payment_Gateway {
 		}
 
 		try {
-			$configuration = RuntimeConfiguration::from_wordpress();
-			$client        = new ApiClient( $configuration->environment(), $configuration->api_key() );
-			$checkouts     = new CheckoutApi( $client );
-			$repository    = self::intent_repository();
-			$site_hash     = substr( hash( 'sha256', home_url( '/' ) ), 0, 12 );
-			$coordinator   = new WooCheckoutCoordinator(
+			$configuration  = RuntimeConfiguration::from_wordpress();
+			$client         = new ApiClient( $configuration->environment(), $configuration->api_key() );
+			$checkouts      = new CheckoutApi( $client );
+			$repository     = self::intent_repository();
+			$site_hash      = substr( hash( 'sha256', home_url( '/' ) ), 0, 12 );
+			$coordinator    = new WooCheckoutCoordinator(
 				$repository,
 				$checkouts,
 				$configuration->environment(),
 				$site_hash
 			);
-			$result        = $coordinator->start(
+			$customer_email = trim( $order->get_billing_email() );
+
+			if ( '' === $customer_email || false === filter_var( $customer_email, FILTER_VALIDATE_EMAIL ) ) {
+				throw new RuntimeException( 'WooCommerce order does not contain a valid billing email for Bachs checkout.' );
+			}
+
+			$customer_name = trim( $order->get_formatted_billing_full_name() );
+			$customer      = array( 'email' => $customer_email );
+			$billing_phone = trim( $order->get_billing_phone() );
+
+			if ( '' !== $customer_name ) {
+				$customer['name'] = $customer_name;
+			}
+
+			if ( 1 === preg_match( '/\A\+[1-9][0-9]{7,14}\z/D', $billing_phone ) ) {
+				$customer['phone_number'] = $billing_phone;
+			}
+
+			$result = $coordinator->start(
 				$order->get_id(),
 				(string) $order->get_total(),
 				$order->get_currency(),
 				BrowserReturnController::success_url( $order ),
-				$order->get_checkout_payment_url()
+				$order->get_checkout_payment_url(),
+				$customer
 			);
 
 			$order->update_meta_data( '_etchpoint_bachs_intent_uuid', $result->intent_uuid() );
@@ -151,7 +172,8 @@ final class Gateway extends WC_Payment_Gateway {
 				'result'   => 'success',
 				'redirect' => $result->redirect_url(),
 			);
-		} catch ( Throwable ) {
+		} catch ( Throwable $exception ) {
+			self::log_checkout_error( (int) $order_id, $exception );
 			wc_add_notice(
 				__( 'Bachs checkout could not be started. Please try again.', 'payment-integrations-for-bachs' ),
 				'error'
@@ -159,6 +181,33 @@ final class Gateway extends WC_Payment_Gateway {
 
 			return array( 'result' => 'failure' );
 		}
+	}
+
+	/**
+	 * Log a checkout initialization failure without exposing credentials.
+	 *
+	 * @param int       $order_id  WooCommerce order identifier.
+	 * @param Throwable $exception Checkout failure.
+	 * @return void
+	 */
+	private static function log_checkout_error( int $order_id, Throwable $exception ): void {
+		if ( ! function_exists( 'wc_get_logger' ) ) {
+			return;
+		}
+
+		$context = array(
+			'source'    => 'bachs',
+			'order_id'  => $order_id,
+			'exception' => get_class( $exception ),
+			'message'   => $exception->getMessage(),
+		);
+
+		if ( $exception instanceof ApiException ) {
+			$context['error_code']  = $exception->error_code();
+			$context['http_status'] = $exception->http_status();
+		}
+
+		wc_get_logger()->error( 'Bachs checkout initialization failed.', $context );
 	}
 
 	/**

@@ -109,11 +109,12 @@ final class WooCheckoutCoordinator {
 	/**
 	 * Start or resume hosted checkout for a WooCommerce order.
 	 *
-	 * @param int    $order_id    WooCommerce order identifier.
-	 * @param string $total       Trusted WooCommerce order total.
-	 * @param string $currency    Trusted WooCommerce order currency.
-	 * @param string $success_url Browser success URL.
-	 * @param string $cancel_url  Browser cancel URL.
+	 * @param int                   $order_id    WooCommerce order identifier.
+	 * @param string                $total       Trusted WooCommerce order total.
+	 * @param string                $currency    Trusted WooCommerce order currency.
+	 * @param string                $success_url Browser success URL.
+	 * @param string                $cancel_url  Browser cancel URL.
+	 * @param array<string, string> $customer    Inline Bachs customer details.
 	 * @return WooCheckoutResult
 	 *
 	 * @throws RuntimeException When checkout creation or persistence cannot be completed safely.
@@ -123,7 +124,8 @@ final class WooCheckoutCoordinator {
 		string $total,
 		string $currency,
 		string $success_url,
-		string $cancel_url
+		string $cancel_url,
+		array $customer = array()
 	): WooCheckoutResult {
 		if ( 1 > $order_id ) {
 			throw new RuntimeException( 'WooCommerce order ID must be positive.' );
@@ -144,7 +146,7 @@ final class WooCheckoutCoordinator {
 			}
 
 			if ( $existing instanceof IntentRecord ) {
-				return $this->create_provider_checkout( $existing->id(), $existing->intent(), $order_id, $success_url, $cancel_url );
+				return $this->create_provider_checkout( $existing->id(), $existing->intent(), $order_id, $success_url, $cancel_url, $customer );
 			}
 		}
 
@@ -152,7 +154,7 @@ final class WooCheckoutCoordinator {
 		$intent  = $this->create_intent( $order_id, $money, $attempt );
 		$row_id  = $this->intents->create( $intent );
 
-		return $this->create_provider_checkout( $row_id, $intent, $order_id, $success_url, $cancel_url );
+		return $this->create_provider_checkout( $row_id, $intent, $order_id, $success_url, $cancel_url, $customer );
 	}
 
 	/**
@@ -223,11 +225,12 @@ final class WooCheckoutCoordinator {
 	/**
 	 * Create the provider checkout and attach it to the persisted intent.
 	 *
-	 * @param int           $row_id      Intent database row identifier.
-	 * @param PaymentIntent $intent      Trusted payment intent.
-	 * @param int           $order_id    WooCommerce order identifier.
-	 * @param string        $success_url Browser success URL.
-	 * @param string        $cancel_url  Browser cancel URL.
+	 * @param int                   $row_id      Intent database row identifier.
+	 * @param PaymentIntent         $intent      Trusted payment intent.
+	 * @param int                   $order_id    WooCommerce order identifier.
+	 * @param string                $success_url Browser success URL.
+	 * @param string                $cancel_url  Browser cancel URL.
+	 * @param array<string, string> $customer    Inline Bachs customer details.
 	 * @return WooCheckoutResult
 	 *
 	 * @throws RuntimeException When the provider response or local attachment is incomplete.
@@ -237,13 +240,15 @@ final class WooCheckoutCoordinator {
 		PaymentIntent $intent,
 		int $order_id,
 		string $success_url,
-		string $cancel_url
+		string $cancel_url,
+		array $customer = array()
 	): WooCheckoutResult {
 		$session = $this->checkouts->create_raw_checkout(
 			$intent,
 			$success_url,
 			$cancel_url,
-			array( 'local_id' => (string) $order_id )
+			array( 'local_id' => (string) $order_id ),
+			$customer
 		);
 		$url     = $session->checkout_url();
 
