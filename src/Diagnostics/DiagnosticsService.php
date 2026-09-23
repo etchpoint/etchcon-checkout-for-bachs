@@ -106,13 +106,19 @@ final class DiagnosticsService {
 	 * @return DiagnosticCheck
 	 */
 	private function php_check(): DiagnosticCheck {
-		$supported = version_compare( PHP_VERSION, '8.1', '>=' );
+		$version = phpversion();
+
+		if ( false === $version ) {
+			$version = __( 'Unknown', 'payment-integrations-for-bachs' );
+		}
+
+		$supported = version_compare( $version, '8.1', '>=' );
 
 		return new DiagnosticCheck(
 			'php_version',
 			__( 'PHP version', 'payment-integrations-for-bachs' ),
 			$supported ? DiagnosticStatus::HEALTHY : DiagnosticStatus::ERROR,
-			PHP_VERSION
+			$version
 		);
 	}
 

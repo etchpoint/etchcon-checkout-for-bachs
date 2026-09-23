@@ -382,9 +382,7 @@ final class IntentRepository implements IntentStore, CheckoutIntentStore, Reconc
 		}
 
 		foreach ( $rows as $row ) {
-			if ( is_array( $row ) ) {
-				$records[] = $this->hydrate( $row );
-			}
+			$records[] = $this->hydrate( $row );
 		}
 
 		return $records;
