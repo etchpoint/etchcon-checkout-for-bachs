@@ -281,7 +281,7 @@ final class DiagnosticsService {
 		if ( class_exists( 'FluentFormPro\\Payments\\PaymentMethods\\BaseProcessor' ) ) {
 			$active[] = 'Fluent Forms Pro';
 		} elseif ( defined( 'FLUENTFORM' ) ) {
-			$active[] = 'Fluent Forms (Pro payment API unavailable)';
+			$active[] = 'Fluent Forms (Pro payments unavailable)';
 		}
 
 		return new DiagnosticCheck(
