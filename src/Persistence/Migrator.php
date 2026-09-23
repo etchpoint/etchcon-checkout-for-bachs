@@ -49,6 +49,79 @@ final class Migrator {
 		dbDelta( Schema::events_sql( $wpdb->prefix, $charset_collate ) );
 		dbDelta( Schema::refunds_sql( $wpdb->prefix, $charset_collate ) );
 
-		update_option( Schema::VERSION_OPTION, Schema::VERSION, false );
+		if ( self::schema_is_current() ) {
+			update_option( Schema::VERSION_OPTION, Schema::VERSION, false );
+		} else {
+			delete_option( Schema::VERSION_OPTION );
+		}
+	}
+
+	/**
+	 * Verify that the required persistence tables and columns actually exist.
+	 *
+	 * @return bool
+	 */
+	public static function schema_is_current(): bool {
+		global $wpdb;
+
+		$requirements = array(
+			Schema::intents_table( $wpdb->prefix ) => array(
+				'id',
+				'uuid',
+				'integration',
+				'local_object_type',
+				'local_object_id',
+				'environment',
+				'reference',
+				'idempotency_key',
+				'expected_amount',
+				'expected_currency',
+				'checkout_id',
+				'charge_id',
+				'provider_status',
+				'application_status',
+				'attempt',
+				'created_at',
+				'updated_at',
+			),
+			Schema::events_table( $wpdb->prefix ) => array(
+				'id',
+				'provider_event_id',
+				'event_type',
+				'payload_hash',
+				'processing_status',
+				'received_at',
+			),
+			Schema::refunds_table( $wpdb->prefix ) => array(
+				'id',
+				'uuid',
+				'intent_id',
+				'charge_id',
+				'reference',
+				'idempotency_key',
+				'provider_status',
+				'application_status',
+				'created_at',
+				'updated_at',
+			),
+		);
+
+		foreach ( $requirements as $table => $required_columns ) {
+			$sql = (string) $wpdb->prepare( 'SHOW COLUMNS FROM %i', $table );
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
+			$columns = $wpdb->get_col( $sql );
+
+			if ( '' !== trim( (string) $wpdb->last_error ) || ! is_array( $columns ) ) {
+				return false;
+			}
+
+			foreach ( $required_columns as $required_column ) {
+				if ( ! in_array( $required_column, $columns, true ) ) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 }

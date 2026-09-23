@@ -115,6 +115,10 @@ final class IntentRepository implements IntentStore, CheckoutIntentStore, Reconc
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
 		$row = $this->wpdb->get_row( $sql, ARRAY_A );
 
+		if ( '' !== trim( (string) $this->wpdb->last_error ) ) {
+			throw new RuntimeException( 'Unable to read the payment intent state.' );
+		}
+
 		if ( ! is_array( $row ) ) {
 			return null;
 		}

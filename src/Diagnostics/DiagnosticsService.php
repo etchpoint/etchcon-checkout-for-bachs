@@ -15,6 +15,7 @@ use Etchpoint\BachsIntegrations\Bachs\Endpoints;
 use Etchpoint\BachsIntegrations\Bachs\RuntimeConfiguration;
 use Etchpoint\BachsIntegrations\Persistence\EventRepository;
 use Etchpoint\BachsIntegrations\Persistence\IntentRepository;
+use Etchpoint\BachsIntegrations\Persistence\Migrator;
 use Etchpoint\BachsIntegrations\Persistence\Schema;
 use RuntimeException;
 use Throwable;
@@ -248,7 +249,7 @@ final class DiagnosticsService {
 	 */
 	private function schema_check(): DiagnosticCheck {
 		$installed = (string) get_option( Schema::VERSION_OPTION, '' );
-		$healthy   = Schema::VERSION === $installed;
+		$healthy   = Schema::VERSION === $installed && Migrator::schema_is_current();
 
 		return new DiagnosticCheck(
 			'database_schema',

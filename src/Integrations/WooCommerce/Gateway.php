@@ -216,6 +216,12 @@ final class Gateway extends WC_Payment_Gateway {
 			$context['http_status'] = $exception->http_status();
 		}
 
+		global $wpdb;
+
+		if ( isset( $wpdb ) && '' !== trim( (string) $wpdb->last_error ) ) {
+			$context['database_error'] = trim( (string) $wpdb->last_error );
+		}
+
 		wc_get_logger()->error( 'Bachs checkout initialization failed.', $context );
 	}
 

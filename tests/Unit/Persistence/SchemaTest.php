@@ -37,8 +37,10 @@ final class SchemaTest extends TestCase {
 
 		self::assertStringContainsString( 'charge_id VARCHAR(191) NULL', $sql );
 		self::assertStringContainsString( 'UNIQUE KEY provider_charge_id (charge_id)', $sql );
+		self::assertStringContainsString( 'idempotency_key VARCHAR(191) NOT NULL', $sql );
 		self::assertStringContainsString( 'UNIQUE KEY idempotency_key (idempotency_key)', $sql );
-		self::assertStringContainsString( 'UNIQUE KEY local_attempt (integration, local_object_type, local_object_id, attempt)', $sql );
+		self::assertStringContainsString( 'KEY local_lookup (integration, local_object_type, local_object_id(64))', $sql );
+		self::assertStringNotContainsString( 'UNIQUE KEY local_attempt', $sql );
 	}
 
 	/**
@@ -63,6 +65,7 @@ final class SchemaTest extends TestCase {
 		self::assertStringContainsString( 'UNIQUE KEY refund_charge_id (charge_id)', $sql );
 		self::assertStringContainsString( 'UNIQUE KEY provider_refund_id (provider_refund_id)', $sql );
 		self::assertStringContainsString( 'UNIQUE KEY refund_reference (reference)', $sql );
+		self::assertStringContainsString( 'idempotency_key VARCHAR(191) NOT NULL', $sql );
 		self::assertStringContainsString( 'UNIQUE KEY refund_idempotency_key (idempotency_key)', $sql );
 	}
 

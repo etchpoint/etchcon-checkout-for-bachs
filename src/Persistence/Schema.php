@@ -14,7 +14,7 @@ namespace Etchpoint\BachsIntegrations\Persistence;
  */
 final class Schema {
 	/** Current database schema version. */
-	public const VERSION = '3';
+	public const VERSION = '4';
 
 	/** Option used to track the installed schema version. */
 	public const VERSION_OPTION = 'etchpoint_bachs_schema_version';
@@ -76,7 +76,7 @@ final class Schema {
 			. "local_object_id VARCHAR(191) NOT NULL,\n"
 			. "environment VARCHAR(16) NOT NULL,\n"
 			. "reference VARCHAR(128) NOT NULL,\n"
-			. "idempotency_key VARCHAR(255) NOT NULL,\n"
+			. "idempotency_key VARCHAR(191) NOT NULL,\n"
 			. "expected_amount VARCHAR(40) NOT NULL,\n"
 			. "expected_currency VARCHAR(12) NOT NULL,\n"
 			. "checkout_id VARCHAR(191) NULL,\n"
@@ -96,8 +96,7 @@ final class Schema {
 			. "UNIQUE KEY idempotency_key (idempotency_key),\n"
 			. "UNIQUE KEY checkout_id (checkout_id),\n"
 			. "UNIQUE KEY provider_charge_id (charge_id),\n"
-			. "UNIQUE KEY local_attempt (integration, local_object_type, local_object_id, attempt),\n"
-			. "KEY local_lookup (integration, local_object_type, local_object_id),\n"
+			. "KEY local_lookup (integration, local_object_type, local_object_id(64)),\n"
 			. "KEY state_lookup (provider_status, application_status)\n"
 			. ") {$charset_collate};";
 	}
@@ -154,7 +153,7 @@ final class Schema {
 			. "charge_id VARCHAR(191) NOT NULL,\n"
 			. "provider_refund_id VARCHAR(191) NULL,\n"
 			. "reference VARCHAR(128) NOT NULL,\n"
-			. "idempotency_key VARCHAR(255) NOT NULL,\n"
+			. "idempotency_key VARCHAR(191) NOT NULL,\n"
 			. "requested_amount VARCHAR(40) NOT NULL,\n"
 			. "currency VARCHAR(12) NOT NULL,\n"
 			. "refunded_amount VARCHAR(40) NULL,\n"
