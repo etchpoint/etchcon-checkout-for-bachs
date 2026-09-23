@@ -77,6 +77,9 @@ final class RefundRequestService {
 		$this->api      = $api;
 	}
 
+	// These exception messages are internal diagnostics and are never rendered as HTML output.
+	// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+
 	/**
 	 * Request a full or partial refund for one completed payment intent.
 	 *
@@ -248,6 +251,8 @@ final class RefundRequestService {
 			throw self::request_exception( 'Bachs refund response did not match the persisted request.', RefundRequestException::REQUIRES_REVIEW );
 		}
 	}
+
+	// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 
 	/**
 	 * Normalize provider refund states.
