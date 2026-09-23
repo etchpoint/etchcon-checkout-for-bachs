@@ -115,6 +115,8 @@ final class WebhookSignatureVerifier {
 		// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 	}
 
+	// PHPCS counts each legacy validation throw separately even though they all use the same exception type.
+	// phpcs:disable Squiz.Commenting.FunctionCommentThrowTag.WrongNumber
 	/**
 	 * Verify the legacy Bachs signature headers without parsing the JSON body.
 	 *
@@ -124,9 +126,7 @@ final class WebhookSignatureVerifier {
 	 * @param string $signing_secret   Endpoint signing secret exactly as configured by Bachs.
 	 * @return VerifiedWebhookSignature
 	 *
-	 * @throws WebhookVerificationException When the signing secret is missing or invalid.
-	 * @throws WebhookVerificationException When the signature timestamp is outside the freshness window.
-	 * @throws WebhookVerificationException When the signature does not match the request body.
+	 * @throws WebhookVerificationException When the legacy signature cannot be verified.
 	 */
 	public function verify_legacy(
 		string $raw_body,
@@ -193,7 +193,7 @@ final class WebhookSignatureVerifier {
 
 		return new VerifiedWebhookSignature( $timestamp, hash( 'sha256', $raw_body ) );
 	}
-
+	// phpcs:enable Squiz.Commenting.FunctionCommentThrowTag.WrongNumber
 
 	/**
 	 * Parse a V2 signature header while preserving repeated v1 values.

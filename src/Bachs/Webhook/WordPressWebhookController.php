@@ -101,7 +101,7 @@ final class WordPressWebhookController {
 	/**
 	 * Process one WordPress REST webhook request.
 	 *
-	 * @param WP_REST_Request    $request Incoming REST request.
+	 * @param WP_REST_Request $request Incoming REST request.
 	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
 	 * @return WP_REST_Response
 	 */

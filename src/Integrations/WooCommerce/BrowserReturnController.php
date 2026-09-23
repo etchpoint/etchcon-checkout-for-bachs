@@ -153,7 +153,7 @@ final class BrowserReturnController {
 	/**
 	 * Determine whether this request is the pending Bachs browser return.
 	 *
-	 * @param mixed  $order  WooCommerce order when available.
+	 * @param mixed $order WooCommerce order when available.
 	 * @return bool
 	 */
 	private static function is_pending_bachs_return( mixed $order ): bool {
