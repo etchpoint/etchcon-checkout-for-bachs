@@ -65,7 +65,12 @@ final class FluentFormsProcessor extends BaseProcessor {
 
 		$this->hooks_registered = true;
 		add_action( 'fluentform/process_payment_' . $this->method, array( $this, 'handlePaymentAction' ), 10, 6 );
-		add_action( 'fluentform/payment_frameless_' . $this->method, array( $this, 'handleSessionRedirectBack' ) );
+		add_action(
+			'fluentform/payment_frameless_' . $this->method,
+			function ( $data ): void {
+				$this->handleSessionRedirectBack( $data );
+			}
+		);
 	}
 
 	// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
