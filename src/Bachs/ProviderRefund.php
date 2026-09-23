@@ -73,14 +73,14 @@ final class ProviderRefund {
 	 * @throws InvalidArgumentException When required evidence is missing.
 	 */
 	public static function from_api_response( array $data ): self {
-		$instance                    = new self();
-		$instance->refund_id         = self::required_string( $data, 'refund_id' );
-		$instance->charge_id         = self::required_string( $data, 'charge_id' );
-		$instance->reference         = self::required_string( $data, 'reference' );
-		$instance->status            = self::required_string( $data, 'status' );
-		$instance->requested_amount  = self::required_string( $data, 'requested_amount' );
-		$instance->refunded_amount   = self::optional_string( $data, 'refunded_amount' );
-		$instance->reason            = self::optional_string( $data, 'reason' );
+		$instance                   = new self();
+		$instance->refund_id        = self::required_string( $data, 'refund_id' );
+		$instance->charge_id        = self::required_string( $data, 'charge_id' );
+		$instance->reference        = self::required_string( $data, 'reference' );
+		$instance->status           = self::required_string( $data, 'status' );
+		$instance->requested_amount = self::required_string( $data, 'requested_amount' );
+		$instance->refunded_amount  = self::optional_string( $data, 'refunded_amount' );
+		$instance->reason           = self::optional_string( $data, 'reason' );
 
 		return $instance;
 	}

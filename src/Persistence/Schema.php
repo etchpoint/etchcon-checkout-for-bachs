@@ -178,5 +178,4 @@ final class Schema {
 			. "KEY refund_state_lookup (provider_status, application_status)\n"
 			. ") {$charset_collate};";
 	}
-
 }

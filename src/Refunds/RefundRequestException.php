@@ -37,10 +37,10 @@ final class RefundRequestException extends RuntimeException {
 	/**
 	 * Create the exception.
 	 *
-	 * @param string $safe_code Stable safe error code.
 	 * @param string $message   Internal non-secret message.
+	 * @param string $safe_code Stable safe error code.
 	 */
-	public function __construct( string $safe_code, string $message ) {
+	public function __construct( string $message, string $safe_code ) {
 		$this->safe_code = $safe_code;
 		parent::__construct( $message );
 	}

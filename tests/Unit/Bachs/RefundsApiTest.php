@@ -31,11 +31,11 @@ final class RefundsApiTest extends TestCase {
 		self::assertSame( 'idem_123', $requester->last_idempotency_key() );
 		self::assertSame(
 			array(
-				'charge_id'       => 'pay_123',
-				'reference'       => 'wp-refund-123',
+				'charge_id'        => 'pay_123',
+				'reference'        => 'wp-refund-123',
 				'idempotency_key' => 'idem_123',
 				'amount'          => '12.50',
-				'reason'          => 'Customer request',
+				'reason'           => 'Customer request',
 			),
 			$requester->last_body()
 		);
@@ -81,13 +81,13 @@ final class RefundsApiTest extends TestCase {
 	 */
 	private static function refund_response(): array {
 		return array(
-			'refund_id'       => 'refund_123',
-			'charge_id'       => 'pay_123',
-			'reference'       => 'wp-refund-123',
-			'status'          => 'processing',
+			'refund_id'        => 'refund_123',
+			'charge_id'        => 'pay_123',
+			'reference'        => 'wp-refund-123',
+			'status'           => 'processing',
 			'requested_amount' => '12.50',
-			'refunded_amount' => null,
-			'reason'          => 'Customer request',
+			'refunded_amount'  => null,
+			'reason'           => 'Customer request',
 		);
 	}
 }

@@ -91,7 +91,7 @@ final class RefundRequestService {
 		$intent_record = $this->intents->find_by_id( $intent_id );
 
 		if ( null === $intent_record ) {
-			throw new RefundRequestException( RefundRequestException::INVALID_REQUEST, 'Payment intent was not found.' );
+			throw new RefundRequestException( 'Payment intent was not found.', RefundRequestException::INVALID_REQUEST );
 		}
 
 		$intent    = $intent_record->intent();
@@ -102,7 +102,7 @@ final class RefundRequestService {
 			|| ApplicationStatus::APPLIED !== $intent->application_status()
 			|| null === $charge_id
 		) {
-			throw new RefundRequestException( RefundRequestException::INVALID_REQUEST, 'Only completed Bachs payments can be refunded.' );
+			throw new RefundRequestException( 'Only completed Bachs payments can be refunded.', RefundRequestException::INVALID_REQUEST );
 		}
 
 		$existing = $this->refunds->find_by_charge_id( $charge_id );
@@ -112,17 +112,17 @@ final class RefundRequestService {
 				return $this->submit_existing( $existing );
 			}
 
-			throw new RefundRequestException( RefundRequestException::ALREADY_REQUESTED, 'This Bachs charge already has a refund operation.' );
+			throw new RefundRequestException( 'This Bachs charge already has a refund operation.', RefundRequestException::ALREADY_REQUESTED );
 		}
 
 		try {
 			$refund_amount = Money::from_decimal( $amount, $intent->expected_amount()->currency() );
 		} catch ( InvalidArgumentException ) {
-			throw new RefundRequestException( RefundRequestException::INVALID_REQUEST, 'Refund amount is invalid.' );
+			throw new RefundRequestException( 'Refund amount is invalid.', RefundRequestException::INVALID_REQUEST );
 		}
 
 		if ( ! $refund_amount->is_positive() || ! $refund_amount->is_less_than_or_equal( $intent->expected_amount() ) ) {
-			throw new RefundRequestException( RefundRequestException::INVALID_REQUEST, 'Refund amount must be positive and no greater than the original payment.' );
+			throw new RefundRequestException( 'Refund amount must be positive and no greater than the original payment.', RefundRequestException::INVALID_REQUEST );
 		}
 
 		$provider_payment = $this->payments->get( $charge_id );
@@ -132,25 +132,25 @@ final class RefundRequestService {
 			|| ! in_array( $provider_payment->status(), self::SUCCESSFUL_PAYMENT_STATUSES, true )
 			|| ! hash_equals( $intent->expected_amount()->currency()->code(), $provider_payment->currency() )
 		) {
-			throw new RefundRequestException( RefundRequestException::REQUIRES_REVIEW, 'Authoritative Bachs payment state does not match the local payment.' );
+			throw new RefundRequestException( 'Authoritative Bachs payment state does not match the local payment.', RefundRequestException::REQUIRES_REVIEW );
 		}
 
 		try {
 			$provider_amount = Money::from_decimal( $provider_payment->amount(), $intent->expected_amount()->currency() );
 		} catch ( InvalidArgumentException ) {
-			throw new RefundRequestException( RefundRequestException::REQUIRES_REVIEW, 'Bachs returned an invalid original payment amount.' );
+			throw new RefundRequestException( 'Bachs returned an invalid original payment amount.', RefundRequestException::REQUIRES_REVIEW );
 		}
 
 		if ( ! $provider_amount->equals( $intent->expected_amount() ) ) {
-			throw new RefundRequestException( RefundRequestException::REQUIRES_REVIEW, 'Authoritative Bachs payment amount does not match the local payment.' );
+			throw new RefundRequestException( 'Authoritative Bachs payment amount does not match the local payment.', RefundRequestException::REQUIRES_REVIEW );
 		}
 
 		if ( null !== $intent_record->checkout_id() && null !== $provider_payment->checkout_id() && ! hash_equals( $intent_record->checkout_id(), $provider_payment->checkout_id() ) ) {
-			throw new RefundRequestException( RefundRequestException::REQUIRES_REVIEW, 'Bachs payment checkout correlation does not match.' );
+			throw new RefundRequestException( 'Bachs payment checkout correlation does not match.', RefundRequestException::REQUIRES_REVIEW );
 		}
 
 		if ( null !== $provider_payment->reference() && ! hash_equals( $intent->reference(), $provider_payment->reference() ) ) {
-			throw new RefundRequestException( RefundRequestException::REQUIRES_REVIEW, 'Bachs payment reference correlation does not match.' );
+			throw new RefundRequestException( 'Bachs payment reference correlation does not match.', RefundRequestException::REQUIRES_REVIEW );
 		}
 
 		$uuid            = wp_generate_uuid4();
@@ -170,7 +170,7 @@ final class RefundRequestService {
 		$record          = $this->refunds->find_by_id( $refund_id );
 
 		if ( null === $record ) {
-			throw new RefundRequestException( RefundRequestException::RETRYABLE, 'Refund request could not be reloaded after persistence.' );
+			throw new RefundRequestException( 'Refund request could not be reloaded after persistence.', RefundRequestException::RETRYABLE );
 		}
 
 		return $this->submit_existing( $record );
@@ -188,7 +188,7 @@ final class RefundRequestService {
 		$intent = $this->intents->find_by_id( $record->intent_id() );
 
 		if ( null === $intent ) {
-			throw new RefundRequestException( RefundRequestException::REQUIRES_REVIEW, 'Refund no longer has a valid original payment intent.' );
+			throw new RefundRequestException( 'Refund no longer has a valid original payment intent.', RefundRequestException::REQUIRES_REVIEW );
 		}
 
 		$full_refund = $record->requested_amount()->equals( $intent->intent()->expected_amount() );
@@ -208,8 +208,8 @@ final class RefundRequestService {
 			$this->refunds->mark_request_failure( $record->id(), $status, $code, 'Bachs could not accept the refund request.' );
 
 			throw new RefundRequestException(
-				$exception->is_retryable() ? RefundRequestException::RETRYABLE : RefundRequestException::INVALID_REQUEST,
-				'Bachs could not accept the refund request.'
+				'Bachs could not accept the refund request.',
+				$exception->is_retryable() ? RefundRequestException::RETRYABLE : RefundRequestException::INVALID_REQUEST
 			);
 		}
 
@@ -217,13 +217,13 @@ final class RefundRequestService {
 		$status = self::provider_status( $provider_refund->status() );
 
 		if ( ! $this->refunds->attach_provider_refund( $record->id(), $provider_refund->refund_id(), $status, $provider_refund->refunded_amount() ) ) {
-			throw new RefundRequestException( RefundRequestException::RETRYABLE, 'Provider refund was created but local state could not be updated.' );
+			throw new RefundRequestException( 'Provider refund was created but local state could not be updated.', RefundRequestException::RETRYABLE );
 		}
 
 		$updated = $this->refunds->find_by_id( $record->id() );
 
 		if ( null === $updated ) {
-			throw new RefundRequestException( RefundRequestException::RETRYABLE, 'Refund state could not be reloaded.' );
+			throw new RefundRequestException( 'Refund state could not be reloaded.', RefundRequestException::RETRYABLE );
 		}
 
 		return $updated;
@@ -245,7 +245,7 @@ final class RefundRequestService {
 			|| ! hash_equals( $record->requested_amount()->amount(), $provider_refund->requested_amount() )
 		) {
 			$this->refunds->mark_request_failure( $record->id(), RefundStatus::REQUIRES_REVIEW, 'provider_correlation_mismatch', 'Bachs refund response did not match the persisted request.' );
-			throw new RefundRequestException( RefundRequestException::REQUIRES_REVIEW, 'Bachs refund response did not match the persisted request.' );
+			throw new RefundRequestException( 'Bachs refund response did not match the persisted request.', RefundRequestException::REQUIRES_REVIEW );
 		}
 	}
 

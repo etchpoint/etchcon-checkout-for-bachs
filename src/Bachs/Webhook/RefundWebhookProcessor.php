@@ -129,6 +129,7 @@ final class RefundWebhookProcessor {
 		$payload_hash = hash( 'sha256', $raw_body );
 
 		if ( ! hash_equals( $signature->payload_hash(), $payload_hash ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- First exception argument is an internal machine code, not rendered output.
 			throw new WebhookProcessingException(
 				WebhookProcessingException::CODE_PAYLOAD_HASH_MISMATCH,
 				'Verified refund webhook signature does not belong to this request body.'
@@ -142,6 +143,7 @@ final class RefundWebhookProcessor {
 		}
 
 		if ( null !== $this->organization_id && ! hash_equals( $this->organization_id, $event->organization_id() ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- First exception argument is an internal machine code, not rendered output.
 			throw new WebhookProcessingException(
 				WebhookProcessingException::CODE_ORGANIZATION_MISMATCH,
 				'Refund webhook organization does not match the configured Bachs organization.'
@@ -149,6 +151,7 @@ final class RefundWebhookProcessor {
 		}
 
 		if ( null !== $event->account() ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- First exception argument is an internal machine code, not rendered output.
 			throw new WebhookProcessingException(
 				WebhookProcessingException::CODE_UNSUPPORTED_CONNECT_EVENT,
 				'Connected-account refund webhook events are outside this plugin release scope.'
@@ -279,6 +282,7 @@ final class RefundWebhookProcessor {
 		$record = $this->events->find_by_provider_event_id( $event->id() );
 
 		if ( null === $record ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- First exception argument is an internal machine code, not rendered output.
 			throw new WebhookProcessingException( WebhookProcessingException::CODE_EVENT_STORE_INCONSISTENT, 'Refund webhook event could not be loaded after deduplication.' );
 		}
 
@@ -305,6 +309,7 @@ final class RefundWebhookProcessor {
 		$claimed = $this->events->find_by_provider_event_id( $event->id() );
 
 		if ( null === $claimed ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- First exception argument is an internal machine code, not rendered output.
 			throw new WebhookProcessingException( WebhookProcessingException::CODE_EVENT_STORE_INCONSISTENT, 'Claimed refund webhook event could not be reloaded.' );
 		}
 
