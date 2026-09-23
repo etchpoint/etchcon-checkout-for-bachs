@@ -69,8 +69,9 @@ final class CheckoutApiTest extends TestCase {
 	public function test_correlation_metadata_cannot_be_overridden(): void {
 		$requester = new RecordingRequester(
 			array(
-				'checkout_id' => 'chk_123',
-				'status'      => 'open',
+				'checkout_id'  => 'chk_123',
+				'checkout_url' => 'https://checkout.bachs.io/c/test',
+				'status'       => 'open',
 			)
 		);
 		$api       = new CheckoutApi( $requester );
