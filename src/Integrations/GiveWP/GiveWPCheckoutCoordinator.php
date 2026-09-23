@@ -32,16 +32,16 @@ final class GiveWPCheckoutCoordinator {
 	/** GiveWP local object type. */
 	private const OBJECT_TYPE = 'donation';
 
-	/** Payment intent store. */
+	/** @var CheckoutIntentStore Payment intent store. */
 	private CheckoutIntentStore $intents;
 
-	/** Hosted checkout provider. */
+	/** @var CheckoutProvider Hosted checkout provider. */
 	private CheckoutProvider $checkouts;
 
-	/** Active Bachs environment. */
+	/** @var Environment Active Bachs environment. */
 	private Environment $environment;
 
-	/** Stable site hash used in idempotency keys. */
+	/** @var string Stable site hash used in idempotency keys. */
 	private string $site_hash;
 
 	/**

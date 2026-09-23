@@ -159,7 +159,7 @@ final class GiveWPGateway extends PaymentGateway {
 			throw $exception;
 		} catch ( Throwable ) {
 			throw new PaymentGatewayException(
-				__( 'Bachs checkout could not be started. Please try again.', 'payment-integrations-for-bachs' )
+				esc_html__( 'Bachs checkout could not be started. Please try again.', 'payment-integrations-for-bachs' )
 			);
 		}
 	}
