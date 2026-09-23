@@ -125,7 +125,7 @@ final class WooCommerceRefundFulfillmentHandler implements RefundFulfillmentHand
 			return $this->retryable_failure( $refund_id, $event_id, 'woo_refund_create_failed', 'WooCommerce could not record the provider-confirmed refund.' );
 		}
 
-		if ( $local_refund instanceof WP_Error || ! $local_refund instanceof WC_Order_Refund ) {
+		if ( $local_refund instanceof WP_Error ) {
 			return $this->retryable_failure( $refund_id, $event_id, 'woo_refund_create_failed', 'WooCommerce could not record the provider-confirmed refund.' );
 		}
 

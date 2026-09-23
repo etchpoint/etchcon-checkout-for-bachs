@@ -26,6 +26,9 @@ namespace FluentFormPro\Payments\PaymentMethods {
 		public function getSubmission(): \stdClass|false { return new \stdClass(); }
 		public function getMetaData( string $metaKey ): mixed { return null; }
 		public function getLastTransaction( int $submissionId ): ?\stdClass { return new \stdClass(); }
+		public function getTransaction( string $value, string $column = 'id' ): ?\stdClass { return new \stdClass(); }
+		public function getReturnData(): mixed { return null; }
+		public function showPaymentView( mixed $returnData ): void {}
 		/** @param array<string, mixed> $data */
 		public function updateTransaction( int $transactionId, array $data ): void {}
 		public function changeTransactionStatus( int $transactionId, string $newStatus ): void {}
