@@ -7,6 +7,7 @@ parameters:
         - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
     scanFiles:
         - phpstan-stubs/pmpro.php
+        - phpstan-stubs/gravity-forms.php
     level: 8
     paths:
         - src

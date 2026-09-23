@@ -274,6 +274,10 @@ final class DiagnosticsService {
 			$active[] = 'Paid Memberships Pro';
 		}
 
+		if ( class_exists( 'GFForms' ) ) {
+			$active[] = 'Gravity Forms';
+		}
+
 		return new DiagnosticCheck(
 			'integrations',
 			__( 'Detected integrations', 'payment-integrations-for-bachs' ),

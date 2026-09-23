@@ -8,7 +8,7 @@ Open-source WordPress payment integrations for Bachs, maintained by Etchpoint.
 
 ## Current integration
 
-WooCommerce and Paid Memberships Pro one-time hosted checkout integrations are implemented on the shared payment core. The core provides payment intents, exact money handling, Bachs API access, signed webhook verification, event deduplication, and verified payment evidence.
+WooCommerce, Paid Memberships Pro, and Gravity Forms one-time hosted checkout integrations are implemented on the shared payment core. The core provides payment intents, exact money handling, Bachs API access, signed webhook verification, event deduplication, and verified payment evidence.
 
 ## Architecture
 
@@ -19,6 +19,7 @@ A public technical overview is available in [`docs/architecture.md`](docs/archit
 - PHP 8.1+
 - WordPress 6.8+
 - WooCommerce 8.3+ for the WooCommerce adapter
+- Gravity Forms 2.9+ for the Gravity Forms adapter
 - Composer 2.x for development
 
 ## Development setup

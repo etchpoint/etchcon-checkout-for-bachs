@@ -15,6 +15,7 @@ use Etchpoint\BachsIntegrations\Bachs\PaymentsApi;
 use Etchpoint\BachsIntegrations\Bachs\RuntimeConfiguration;
 use Etchpoint\BachsIntegrations\Core\Contracts\PaymentFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Core\Payment\FulfillmentRegistry;
+use Etchpoint\BachsIntegrations\Integrations\GravityForms\GravityFormsFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\PMPro\PMProFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\WooCommerce\WooCommerceFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Persistence\EventRepository;
@@ -140,6 +141,10 @@ final class ReconciliationRuntime {
 
 		if ( class_exists( 'MemberOrder' ) ) {
 			$handlers[] = new PMProFulfillmentHandler( $intents, $events );
+		}
+
+		if ( class_exists( 'GFPaymentAddOn' ) ) {
+			$handlers[] = new GravityFormsFulfillmentHandler( $intents, $events );
 		}
 
 		return $handlers;

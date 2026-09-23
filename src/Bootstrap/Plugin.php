@@ -11,6 +11,7 @@ namespace Etchpoint\BachsIntegrations\Bootstrap;
 
 use Etchpoint\BachsIntegrations\Admin\AdminPages;
 use Etchpoint\BachsIntegrations\Bachs\Webhook\SharedWebhookEndpoint;
+use Etchpoint\BachsIntegrations\Integrations\GravityForms\Integration as GravityFormsIntegration;
 use Etchpoint\BachsIntegrations\Integrations\PMPro\Integration as PMProIntegration;
 use Etchpoint\BachsIntegrations\Integrations\WooCommerce\Integration as WooCommerceIntegration;
 use Etchpoint\BachsIntegrations\Persistence\Migrator;
@@ -38,6 +39,7 @@ final class Plugin {
 	public static function boot( string $plugin_file ): void {
 		self::$plugin_file = $plugin_file;
 		WooCommerceIntegration::register_compatibility( $plugin_file );
+		GravityFormsIntegration::register();
 
 		add_action( 'plugins_loaded', array( self::class, 'initialize' ), 20 );
 	}
