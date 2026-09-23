@@ -68,6 +68,7 @@ final class FluentFormsProcessor extends BaseProcessor {
 		add_action( 'fluentform/payment_frameless_' . $this->method, array( $this, 'handleSessionRedirectBack' ) );
 	}
 
+	// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	/**
 	 * Create a pending Fluent transaction and redirect to hosted Bachs checkout.
 	 *
@@ -79,13 +80,13 @@ final class FluentFormsProcessor extends BaseProcessor {
 	 * @param int                    $total_payable   Trusted Fluent Forms total in minor units.
 	 * @return void
 	 */
-	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	public function handlePaymentAction( $submission_id, $submission_data, $form, $method_settings, $has_subscription = false, $total_payable = 0 ) {
+		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 		unset( $submission_data, $method_settings );
 
 		$submission_id = (int) $submission_id;
-		$form_values    = get_object_vars( $form );
-		$form_id        = isset( $form_values['id'] ) ? (int) $form_values['id'] : 0;
+		$form_values   = get_object_vars( $form );
+		$form_id       = isset( $form_values['id'] ) ? (int) $form_values['id'] : 0;
 
 		if ( 1 > $submission_id || 1 > $form_id || true === $has_subscription ) {
 			wp_send_json_error( array( 'message' => __( 'Bachs currently supports one-time Fluent Forms payments only.', 'payment-integrations-for-bachs' ) ), 422 );
@@ -168,14 +169,15 @@ final class FluentFormsProcessor extends BaseProcessor {
 		}
 	}
 
+	// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	/**
 	 * Render Fluent Forms' return view without accepting browser payment claims.
 	 *
 	 * @param mixed $data Fluent Forms return-route data.
 	 * @return mixed
 	 */
-	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	public function handleSessionRedirectBack( $data ) {
+		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 		if ( ! is_array( $data ) ) {
 			return null;
 		}
@@ -193,7 +195,7 @@ final class FluentFormsProcessor extends BaseProcessor {
 
 		if (
 			! is_object( $transaction )
-			|| $submission_id !== (int) ( $transaction->response_id ?? 0 )
+			|| (int) ( $transaction->response_id ?? 0 ) !== $submission_id
 			|| 'bachs' !== (string) ( $transaction->payment_method ?? '' )
 		) {
 			return null;

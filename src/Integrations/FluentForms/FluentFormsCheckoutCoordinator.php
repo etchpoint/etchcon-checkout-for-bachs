@@ -258,8 +258,8 @@ final class FluentFormsCheckoutCoordinator {
 			$success_url,
 			$cancel_url,
 			array(
-				'local_id'      => (string) $submission_id,
-				'form_id'       => (string) $form_id,
+				'local_id' => (string) $submission_id,
+				'form_id'  => (string) $form_id,
 			)
 		);
 		$url     = $session->checkout_url();

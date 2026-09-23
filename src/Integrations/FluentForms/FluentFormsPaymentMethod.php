@@ -48,14 +48,15 @@ final class FluentFormsPaymentMethod extends BasePaymentMethod {
 		add_filter( 'fluentform/available_payment_methods', array( $this, 'pushPaymentMethodToForm' ) );
 	}
 
+	// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	/**
 	 * Add Bachs to the form builder payment methods.
 	 *
 	 * @param array<string, mixed> $methods Existing payment methods.
 	 * @return array<string, mixed>
 	 */
-	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	public function pushPaymentMethodToForm( $methods ) {
+		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 		$enabled = 'no';
 
 		try {
@@ -86,6 +87,7 @@ final class FluentFormsPaymentMethod extends BasePaymentMethod {
 		return $methods;
 	}
 
+	// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	/**
 	 * Define Fluent Forms global settings for Bachs.
 	 *
@@ -93,8 +95,8 @@ final class FluentFormsPaymentMethod extends BasePaymentMethod {
 	 *
 	 * @return array<string, mixed>
 	 */
-	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	public function getGlobalFields() {
+		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 		return array(
 			'label'  => __( 'Bachs Payment Settings', 'payment-integrations-for-bachs' ),
 			'fields' => array(
@@ -108,13 +110,14 @@ final class FluentFormsPaymentMethod extends BasePaymentMethod {
 		);
 	}
 
+	// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	/**
 	 * Get saved Fluent Forms settings for this payment method.
 	 *
 	 * @return array<string, mixed>
 	 */
-	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	public function getGlobalSettings() {
+		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 		$settings = get_option( 'fluentform_payment_settings_' . self::METHOD, array() );
 
 		return is_array( $settings ) ? $settings : array();
