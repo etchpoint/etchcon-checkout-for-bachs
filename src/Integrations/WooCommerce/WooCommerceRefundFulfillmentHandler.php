@@ -114,9 +114,9 @@ final class WooCommerceRefundFulfillmentHandler implements RefundFulfillmentHand
 		try {
 			$local_refund = wc_create_refund(
 				array(
-					'order_id'      => $order->get_id(),
-					'amount'        => $refund->refunded_amount()->amount(),
-					'reason'        => $reason,
+					'order_id'       => $order->get_id(),
+					'amount'         => $refund->refunded_amount()->amount(),
+					'reason'         => $reason,
 					'refund_payment' => false,
 					'restock_items'  => false,
 				)

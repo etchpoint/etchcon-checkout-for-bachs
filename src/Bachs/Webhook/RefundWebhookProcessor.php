@@ -129,11 +129,13 @@ final class RefundWebhookProcessor {
 		$payload_hash = hash( 'sha256', $raw_body );
 
 		if ( ! hash_equals( $signature->payload_hash(), $payload_hash ) ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- First exception argument is an internal machine code, not rendered output.
+			// Exception arguments are internal processing data, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new WebhookProcessingException(
 				WebhookProcessingException::CODE_PAYLOAD_HASH_MISMATCH,
 				'Verified refund webhook signature does not belong to this request body.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		$event = $this->parser->parse( $raw_body );
@@ -143,19 +145,23 @@ final class RefundWebhookProcessor {
 		}
 
 		if ( null !== $this->organization_id && ! hash_equals( $this->organization_id, $event->organization_id() ) ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- First exception argument is an internal machine code, not rendered output.
+			// Exception arguments are internal processing data, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new WebhookProcessingException(
 				WebhookProcessingException::CODE_ORGANIZATION_MISMATCH,
 				'Refund webhook organization does not match the configured Bachs organization.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		if ( null !== $event->account() ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- First exception argument is an internal machine code, not rendered output.
+			// Exception arguments are internal processing data, not rendered output.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new WebhookProcessingException(
 				WebhookProcessingException::CODE_UNSUPPORTED_CONNECT_EVENT,
 				'Connected-account refund webhook events are outside this plugin release scope.'
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		$record = $this->record_and_claim( $event, $payload_hash );
