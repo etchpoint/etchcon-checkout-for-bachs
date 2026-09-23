@@ -110,29 +110,32 @@ final class PMProGatewayRuntime {
 	/**
 	 * Redirect to the validated Bachs hosted checkout origin.
 	 *
-	 * CheckoutApi rejects any hosted checkout URL outside checkout.bachs.io
-	 * before this method is reached. The allowlist is added only for the
+	 * CheckoutApi rejects any hosted checkout URL outside Bachs-owned HTTPS
+	 * subdomains before this method is reached. The allowlist is added only for the
 	 * duration of this redirect so WordPress can use wp_safe_redirect().
 	 *
 	 * @param string $url Validated Bachs hosted checkout URL.
 	 * @return never
 	 */
 	private static function redirect_to_bachs_checkout( string $url ): never {
-		add_filter( 'allowed_redirect_hosts', array( self::class, 'allow_bachs_checkout_host' ) );
+		add_filter( 'allowed_redirect_hosts', array( self::class, 'allow_bachs_checkout_host' ), 10, 2 );
 		wp_safe_redirect( $url );
-		remove_filter( 'allowed_redirect_hosts', array( self::class, 'allow_bachs_checkout_host' ) );
+		remove_filter( 'allowed_redirect_hosts', array( self::class, 'allow_bachs_checkout_host' ), 10 );
 		exit;
 	}
 
 	/**
-	 * Allow the fixed Bachs hosted checkout origin for a safe redirect.
+	 * Allow a validated Bachs hosted checkout origin for a safe redirect.
 	 *
 	 * @param array<int, string> $hosts WordPress redirect host allowlist.
+	 * @param string             $host  Redirect host WordPress is validating.
 	 * @return array<int, string>
 	 */
-	public static function allow_bachs_checkout_host( array $hosts ): array {
-		if ( ! in_array( 'checkout.bachs.io', $hosts, true ) ) {
-			$hosts[] = 'checkout.bachs.io';
+	public static function allow_bachs_checkout_host( array $hosts, string $host = '' ): array {
+		$host = strtolower( rtrim( $host, '.' ) );
+
+		if ( '' !== $host && str_ends_with( $host, '.bachs.io' ) && ! in_array( $host, $hosts, true ) ) {
+			$hosts[] = $host;
 		}
 
 		return $hosts;

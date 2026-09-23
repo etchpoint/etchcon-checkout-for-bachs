@@ -92,7 +92,8 @@ final class CheckoutSession {
 		$instance                 = new self();
 		$instance->checkout_id    = $checkout_id;
 		$instance->status         = $status;
-		$instance->checkout_url   = self::optional_string( $data, 'checkout_url' );
+		$checkout_url             = self::optional_string( $data, 'checkout_url' );
+		$instance->checkout_url   = null === $checkout_url ? null : trim( $checkout_url );
 		$instance->payment_status = self::optional_string( $data, 'payment_status' );
 		$instance->amount         = self::optional_string( $data, 'amount' );
 		$instance->currency       = self::optional_string( $data, 'currency' );

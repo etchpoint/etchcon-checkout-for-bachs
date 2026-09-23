@@ -124,6 +124,54 @@ final class CheckoutApiTest extends TestCase {
 	}
 
 	/**
+	 * Environment-specific Bachs checkout subdomains remain trusted.
+	 *
+	 * @return void
+	 */
+	public function test_create_accepts_bachs_owned_checkout_subdomain(): void {
+		$requester = new RecordingRequester(
+			array(
+				'checkout_id'  => 'chk_123',
+				'checkout_url' => 'https://sandbox-checkout.bachs.io/c/test',
+				'status'       => 'open',
+			)
+		);
+		$api       = new CheckoutApi( $requester );
+
+		$session = $api->create_raw_checkout(
+			self::intent(),
+			'https://merchant.example/success',
+			'https://merchant.example/cancel'
+		);
+
+		self::assertSame( 'https://sandbox-checkout.bachs.io/c/test', $session->checkout_url() );
+	}
+
+	/**
+	 * Provider checkout URLs are normalized before trust validation.
+	 *
+	 * @return void
+	 */
+	public function test_create_trims_hosted_checkout_url(): void {
+		$requester = new RecordingRequester(
+			array(
+				'checkout_id'  => 'chk_123',
+				'checkout_url' => '  https://checkout.bachs.io/c/test  ',
+				'status'       => 'open',
+			)
+		);
+		$api       = new CheckoutApi( $requester );
+
+		$session = $api->create_raw_checkout(
+			self::intent(),
+			'https://merchant.example/success',
+			'https://merchant.example/cancel'
+		);
+
+		self::assertSame( 'https://checkout.bachs.io/c/test', $session->checkout_url() );
+	}
+
+	/**
 	 * Provider responses cannot redirect customers to an arbitrary origin.
 	 *
 	 * @return void

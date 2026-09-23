@@ -178,10 +178,12 @@ final class CheckoutApi implements CheckoutProvider {
 
 		// Native parsing keeps this value object usable in isolated unit tests without bootstrapping WordPress.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
-		$parts = parse_url( $url );
+		$parts = parse_url( trim( $url ) );
+		$host  = is_array( $parts ) ? strtolower( rtrim( (string) ( $parts['host'] ?? '' ), '.' ) ) : '';
 		$valid = is_array( $parts )
+			&& false !== filter_var( trim( $url ), FILTER_VALIDATE_URL )
 			&& 'https' === strtolower( (string) ( $parts['scheme'] ?? '' ) )
-			&& 'checkout.bachs.io' === strtolower( (string) ( $parts['host'] ?? '' ) )
+			&& self::is_bachs_checkout_host( $host )
 			&& ! isset( $parts['user'] )
 			&& ! isset( $parts['pass'] )
 			&& ( ! isset( $parts['port'] ) || 443 === (int) $parts['port'] );
@@ -191,6 +193,20 @@ final class CheckoutApi implements CheckoutProvider {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new InvalidArgumentException( 'Bachs checkout response contained an untrusted hosted checkout URL.' );
 		}
+	}
+
+	/**
+	 * Determine whether a host belongs to Bachs' checkout infrastructure.
+	 *
+	 * Bachs may use environment-specific checkout subdomains. The authenticated
+	 * API response is therefore restricted to HTTPS hosts beneath bachs.io
+	 * rather than one hard-coded checkout hostname.
+	 *
+	 * @param string $host Normalized lowercase host.
+	 * @return bool
+	 */
+	private static function is_bachs_checkout_host( string $host ): bool {
+		return '' !== $host && str_ends_with( $host, '.bachs.io' );
 	}
 
 	/**
