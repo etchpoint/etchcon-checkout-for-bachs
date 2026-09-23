@@ -29,10 +29,18 @@ final class GravityFormsFulfillmentHandler implements PaymentFulfillmentHandler 
 	/** Successful fulfillment marker stored in Gravity Forms entry meta. */
 	private const FULFILLED_META = '_etchpoint_bachs_fulfilled';
 
-	/** @var IntentRepository Payment intent repository. */
+	/**
+	 * Payment intent repository.
+	 *
+	 * @var IntentRepository
+	 */
 	private IntentRepository $intents;
 
-	/** @var EventRepository Event inbox repository. */
+	/**
+	 * Event inbox repository.
+	 *
+	 * @var EventRepository
+	 */
 	private EventRepository $events;
 
 	/**
@@ -97,7 +105,7 @@ final class GravityFormsFulfillmentHandler implements PaymentFulfillmentHandler 
 		$entry_id = (int) $payment->local_object_id();
 		$entry    = GFAPI::get_entry( $entry_id );
 
-		if ( $entry instanceof WP_Error || ! is_array( $entry ) || $entry_id !== (int) ( $entry['id'] ?? 0 ) ) {
+		if ( $entry instanceof WP_Error || ! is_array( $entry ) || (int) ( $entry['id'] ?? 0 ) !== $entry_id ) {
 			return $this->requires_review( $intent_id, $event_id, 'gravity_forms_entry_missing', 'Gravity Forms entry could not be found.' );
 		}
 

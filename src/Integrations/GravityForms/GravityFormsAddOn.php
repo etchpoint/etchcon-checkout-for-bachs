@@ -21,35 +21,84 @@ use Throwable;
  * Connects Gravity Forms' official payment framework to Bachs hosted checkout.
  */
 final class GravityFormsAddOn extends GFPaymentAddOn {
-	/** @var self|null Singleton add-on instance. */
+	/**
+	 * Singleton add-on instance.
+	 *
+	 * @var self|null
+	 */
 	private static ?self $instance = null;
 
-	/** @var string Add-on version. */
+	// These protected property names are defined by Gravity Forms' GFAddOn API.
+	// phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
+
+	/**
+	 * Add-on version.
+	 *
+	 * @var string
+	 */
 	protected $_version = '1.0.0';
 
-	/** @var string Minimum supported Gravity Forms version. */
+	/**
+	 * Minimum supported Gravity Forms version.
+	 *
+	 * @var string
+	 */
 	protected $_min_gravityforms_version = '2.9';
 
-	/** @var string Gravity Forms add-on slug. */
+	/**
+	 * Gravity Forms add-on slug.
+	 *
+	 * @var string
+	 */
 	protected $_slug = 'gravityformsbachs';
 
-	/** @var string Plugin path used by the Gravity Forms framework. */
+	/**
+	 * Plugin path used by the Gravity Forms framework.
+	 *
+	 * @var string
+	 */
 	protected $_path = 'payment-integrations-for-bachs/payment-integrations-for-bachs.php';
 
-	/** @var string Physical add-on class path. */
+	/**
+	 * Physical add-on class path.
+	 *
+	 * @var string
+	 */
 	protected $_full_path = __FILE__;
 
-	/** @var string Add-on title. */
+	/**
+	 * Add-on title.
+	 *
+	 * @var string
+	 */
 	protected $_title = 'Gravity Forms Bachs';
 
-	/** @var string Short add-on title. */
+	/**
+	 * Short add-on title.
+	 *
+	 * @var string
+	 */
 	protected $_short_title = 'Bachs';
 
-	/** @var bool Shared plugin webhook handles provider callbacks. */
+	/**
+	 * Whether Gravity Forms should expose its callback route.
+	 *
+	 * The shared plugin webhook handles Bachs callbacks instead.
+	 *
+	 * @var bool
+	 */
 	protected $_supports_callbacks = false;
 
-	/** @var bool Bachs uses hosted checkout, not a local card field. */
+	/**
+	 * Whether the gateway requires Gravity Forms' local card field.
+	 *
+	 * Bachs uses hosted checkout, so no local card field is required.
+	 *
+	 * @var bool
+	 */
 	protected $_requires_credit_card = false;
+
+	// phpcs:enable PSR2.Classes.PropertyDeclaration.Underscore
 
 	/**
 	 * Get the singleton add-on instance.

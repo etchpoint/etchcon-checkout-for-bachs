@@ -32,22 +32,46 @@ final class GravityFormsCheckoutCoordinator {
 	/** Gravity Forms local object type. */
 	private const OBJECT_TYPE = 'entry';
 
-	/** @var CheckoutIntentStore Payment intent store. */
+	/**
+	 * Payment intent store.
+	 *
+	 * @var CheckoutIntentStore
+	 */
 	private CheckoutIntentStore $intents;
 
-	/** @var CheckoutProvider Hosted checkout provider. */
+	/**
+	 * Hosted checkout provider.
+	 *
+	 * @var CheckoutProvider
+	 */
 	private CheckoutProvider $checkouts;
 
-	/** @var Environment Active Bachs environment. */
+	/**
+	 * Active Bachs environment.
+	 *
+	 * @var Environment
+	 */
 	private Environment $environment;
 
-	/** @var string Stable site hash used in idempotency keys. */
+	/**
+	 * Stable site hash used in idempotency keys.
+	 *
+	 * @var string
+	 */
 	private string $site_hash;
 
-	/** @var Closure(): string UUID generator. */
+	/**
+	 * UUID generator.
+	 *
+	 * @var Closure(): string
+	 */
 	private Closure $uuid_generator;
 
-	/** @var Closure(): string Opaque reference suffix generator. */
+	/**
+	 * Opaque reference suffix generator.
+	 *
+	 * @var Closure(): string
+	 */
 	private Closure $reference_generator;
 
 	/**

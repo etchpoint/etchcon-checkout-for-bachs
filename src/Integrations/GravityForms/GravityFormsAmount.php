@@ -57,11 +57,15 @@ final class GravityFormsAmount {
 			throw new InvalidArgumentException( 'Gravity Forms payment amount exceeds the currency decimal scale.' );
 		}
 
-		if ( 0 === $scale ) {
-			return ltrim( $parts[0], '0' ) ?: '0';
+		$integer = ltrim( $parts[0], '0' );
+
+		if ( '' === $integer ) {
+			$integer = '0';
 		}
 
-		$integer = ltrim( $parts[0], '0' ) ?: '0';
+		if ( 0 === $scale ) {
+			return $integer;
+		}
 
 		return $integer . '.' . str_pad( $fraction, $scale, '0' );
 	}
