@@ -65,7 +65,7 @@ jobs:
         run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Build release candidate
-        run: .github/scripts/build-release.sh
+        run: bash .github/scripts/build-release.sh
 
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
