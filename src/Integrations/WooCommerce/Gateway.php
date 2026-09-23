@@ -140,7 +140,16 @@ final class Gateway extends WC_Payment_Gateway {
 			$customer_email = trim( $order->get_billing_email() );
 
 			if ( '' === $customer_email || false === filter_var( $customer_email, FILTER_VALIDATE_EMAIL ) ) {
-				throw new RuntimeException( 'WooCommerce order does not contain a valid billing email for Bachs checkout.' );
+				self::log_checkout_error(
+					(int) $order_id,
+					new RuntimeException( 'WooCommerce order does not contain a valid billing email for Bachs checkout.' )
+				);
+				wc_add_notice(
+					__( 'Bachs checkout could not be started. Please check your billing email and try again.', 'payment-integrations-for-bachs' ),
+					'error'
+				);
+
+				return array( 'result' => 'failure' );
 			}
 
 			$customer_name = trim( $order->get_formatted_billing_full_name() );
