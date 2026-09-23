@@ -281,7 +281,11 @@ final class DiagnosticsService {
 		if ( class_exists( 'FluentFormPro\\Payments\\PaymentMethods\\BaseProcessor' ) ) {
 			$active[] = 'Fluent Forms Pro';
 		} elseif ( defined( 'FLUENTFORM' ) ) {
-			$active[] = 'Fluent Forms (Pro payment API unavailable)';
+			$active[] = 'Fluent Forms (Pro payments unavailable)';
+		}
+
+		if ( class_exists( 'Give\\Donations\\Models\\Donation' ) ) {
+			$active[] = 'GiveWP';
 		}
 
 		return new DiagnosticCheck(

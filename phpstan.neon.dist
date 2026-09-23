@@ -9,6 +9,7 @@ parameters:
         - phpstan-stubs/pmpro.php
         - phpstan-stubs/gravity-forms.php
         - phpstan-stubs/fluent-forms.php
+        - phpstan-stubs/givewp.php
     level: 8
     paths:
         - src

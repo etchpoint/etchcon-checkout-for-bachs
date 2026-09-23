@@ -16,6 +16,7 @@ use Etchpoint\BachsIntegrations\Bachs\RuntimeConfiguration;
 use Etchpoint\BachsIntegrations\Core\Contracts\PaymentFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Core\Payment\FulfillmentRegistry;
 use Etchpoint\BachsIntegrations\Integrations\FluentForms\FluentFormsFulfillmentHandler;
+use Etchpoint\BachsIntegrations\Integrations\GiveWP\GiveWPFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\GravityForms\GravityFormsFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\PMPro\PMProFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\WooCommerce\WooCommerceFulfillmentHandler;
@@ -150,6 +151,10 @@ final class ReconciliationRuntime {
 
 		if ( class_exists( 'FluentFormPro\\Payments\\PaymentMethods\\BaseProcessor' ) ) {
 			$handlers[] = new FluentFormsFulfillmentHandler( $intents, $events );
+		}
+
+		if ( class_exists( 'Give\\Donations\\Models\\Donation' ) ) {
+			$handlers[] = new GiveWPFulfillmentHandler( $intents, $events );
 		}
 
 		return $handlers;

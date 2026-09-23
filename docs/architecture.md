@@ -406,7 +406,7 @@ The Fluent Forms integration loads only when the Fluent Forms Pro payment extens
 
 ### GiveWP
 
-The GiveWP adapter uses GiveWP's supported payment-gateway APIs and treats Bachs as an off-site hosted checkout provider.
+The GiveWP adapter uses GiveWP's supported payment-gateway registry and `RedirectOffsite` command for one-time donations. Browser redirects do not grant payment state; the shared signed Bachs webhook verifies the payment before the donation is completed through GiveWP's donation model API.
 
 ---
 
