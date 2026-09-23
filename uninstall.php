@@ -14,3 +14,4 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 // Remove plugin runtime housekeeping while retaining financial/audit tables.
 wp_clear_scheduled_hook( 'etchpoint_bachs_reconcile' );
 delete_option( 'etchpoint_bachs_schema_version' );
+delete_option( 'etchpoint_bachs_settings' );

@@ -30,7 +30,7 @@ final class Gateway extends WC_Payment_Gateway {
 	public function __construct() {
 		$this->id                 = self::ID;
 		$this->method_title       = __( 'Bachs', 'payment-integrations-for-bachs' );
-		$this->method_description = __( 'Accept payment through Bachs hosted checkout.', 'payment-integrations-for-bachs' );
+		$this->method_description = __( 'Accept payment through Bachs hosted checkout. Configure shared Bachs credentials under Bachs Payments > Settings.', 'payment-integrations-for-bachs' );
 		$this->has_fields         = false;
 		$this->supports           = array( 'products' );
 

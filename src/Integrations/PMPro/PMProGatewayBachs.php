@@ -45,7 +45,7 @@ final class PMProGateway_Bachs extends PMProGateway {
 	 */
 	public static function get_description_for_gateway_settings() {
 		return esc_html__(
-			'Accept one-time membership payments through Bachs hosted checkout. Bachs API credentials and webhook secrets are configured through the Payment Integrations for Bachs runtime constants.',
+			'Accept one-time membership payments through Bachs hosted checkout. Configure shared Bachs credentials under Bachs Payments > Settings.',
 			'payment-integrations-for-bachs'
 		);
 	}
@@ -57,6 +57,10 @@ final class PMProGateway_Bachs extends PMProGateway {
 	 * @return bool
 	 */
 	public function process( &$order ) {
+		if ( ! $order instanceof MemberOrder ) {
+			return false;
+		}
+
 		return PMProGatewayRuntime::process( $order );
 	}
 }

@@ -13,9 +13,12 @@ use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * Immutable runtime configuration with hardened constant-based secret support.
+ * Immutable runtime configuration with wp-config constant overrides.
  */
 final class RuntimeConfiguration {
+	/** WordPress option containing dashboard-managed Bachs settings. */
+	public const OPTION_NAME = 'etchpoint_bachs_settings';
+
 	/**
 	 * Active environment.
 	 *
@@ -65,36 +68,47 @@ final class RuntimeConfiguration {
 	}
 
 	/**
-	 * Build configuration from hardened wp-config constants.
+	 * Build configuration from WordPress settings with optional wp-config overrides.
 	 *
-	 * ETCHPOINT_BACHS_ENVIRONMENT defaults to sandbox when absent. Secrets are
-	 * intentionally not read from WooCommerce settings in this build stage.
+	 * ETCHPOINT_BACHS_ENVIRONMENT defaults to the saved dashboard setting and then
+	 * sandbox. Secret constants override dashboard-managed values when present.
 	 *
 	 * @return self
 	 *
 	 * @throws InvalidArgumentException When the configured environment is invalid.
 	 */
 	public static function from_wordpress(): self {
-		$environment_value = self::constant_string( 'ETCHPOINT_BACHS_ENVIRONMENT' ) ?? Environment::SANDBOX->value;
+		$settings          = self::stored_settings();
+		$environment_value = self::constant_string( 'ETCHPOINT_BACHS_ENVIRONMENT' )
+			?? self::setting_string( $settings, 'environment' )
+			?? Environment::SANDBOX->value;
 		$environment       = Environment::tryFrom( $environment_value );
 
 		if ( null === $environment ) {
 			throw new InvalidArgumentException( 'ETCHPOINT_BACHS_ENVIRONMENT must be either sandbox or live.' );
 		}
 
-		$key_constant = Environment::SANDBOX === $environment
-			? 'ETCHPOINT_BACHS_SANDBOX_SECRET_KEY'
-			: 'ETCHPOINT_BACHS_LIVE_SECRET_KEY';
-		$api_key      = self::constant_string( $key_constant ) ?? '';
-		$primary      = self::constant_string( 'ETCHPOINT_BACHS_WEBHOOK_SECRET' );
-		$previous     = self::constant_string( 'ETCHPOINT_BACHS_WEBHOOK_SECRET_PREVIOUS' );
-		$secrets      = array();
+		if ( Environment::SANDBOX === $environment ) {
+			$api_key = self::constant_string( 'ETCHPOINT_BACHS_SANDBOX_SECRET_KEY' )
+				?? self::setting_string( $settings, 'sandbox_secret_key' )
+				?? '';
+		} else {
+			$api_key = self::constant_string( 'ETCHPOINT_BACHS_LIVE_SECRET_KEY' )
+				?? self::setting_string( $settings, 'live_secret_key' )
+				?? '';
+		}
 
-		if ( null !== $primary ) {
+		$primary  = self::constant_string( 'ETCHPOINT_BACHS_WEBHOOK_SECRET' )
+			?? self::setting_string( $settings, 'webhook_secret' );
+		$previous = self::constant_string( 'ETCHPOINT_BACHS_WEBHOOK_SECRET_PREVIOUS' )
+			?? self::setting_string( $settings, 'webhook_secret_previous' );
+		$secrets  = array();
+
+		if ( null !== $primary && '' !== $primary ) {
 			$secrets[] = $primary;
 		}
 
-		if ( null !== $previous ) {
+		if ( null !== $previous && '' !== $previous ) {
 			$secrets[] = $previous;
 		}
 
@@ -103,6 +117,7 @@ final class RuntimeConfiguration {
 			$api_key,
 			$secrets,
 			self::constant_string( 'ETCHPOINT_BACHS_ORGANIZATION_ID' )
+				?? self::setting_string( $settings, 'organization_id' )
 		);
 	}
 
@@ -225,6 +240,49 @@ final class RuntimeConfiguration {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Read normalized dashboard-managed settings.
+	 *
+	 * @return array<string, string>
+	 */
+	private static function stored_settings(): array {
+		$value = get_option( self::OPTION_NAME, array() );
+
+		if ( ! is_array( $value ) ) {
+			return array();
+		}
+
+		$settings = array();
+
+		foreach (
+			array(
+				'environment',
+				'sandbox_secret_key',
+				'live_secret_key',
+				'webhook_secret',
+				'webhook_secret_previous',
+				'organization_id',
+			) as $key
+		) {
+			if ( isset( $value[ $key ] ) && is_string( $value[ $key ] ) ) {
+				$settings[ $key ] = $value[ $key ];
+			}
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Read one normalized setting string.
+	 *
+	 * @param array<string, string> $settings Settings array.
+	 * @param string                $key      Setting key.
+	 * @return string|null
+	 */
+	private static function setting_string( array $settings, string $key ): ?string {
+		return isset( $settings[ $key ] ) ? $settings[ $key ] : null;
 	}
 
 	/**

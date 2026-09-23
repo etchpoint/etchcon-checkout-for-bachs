@@ -51,6 +51,7 @@ final class AdminPages {
 	 * @return void
 	 */
 	public static function register(): void {
+		SettingsPage::register();
 		add_action( 'admin_menu', array( self::class, 'register_menu' ) );
 		add_action( 'admin_post_' . self::RECONCILE_ACTION, array( self::class, 'handle_reconcile' ) );
 		add_action( 'admin_post_' . self::REFUND_ACTION, array( self::class, 'handle_refund' ) );
@@ -67,8 +68,17 @@ final class AdminPages {
 			__( 'Bachs Payments', 'payment-integrations-for-bachs' ),
 			self::CAPABILITY,
 			self::MENU_SLUG,
-			array( self::class, 'render_diagnostics' ),
+			array( SettingsPage::class, 'render' ),
 			'dashicons-money-alt'
+		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
+			__( 'Bachs Settings', 'payment-integrations-for-bachs' ),
+			__( 'Settings', 'payment-integrations-for-bachs' ),
+			self::CAPABILITY,
+			self::MENU_SLUG,
+			array( SettingsPage::class, 'render' )
 		);
 
 		add_submenu_page(

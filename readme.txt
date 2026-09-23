@@ -31,26 +31,33 @@ Recurring payments and subscriptions are not included in version 1.0.0.
 
 1. Upload the plugin ZIP through Plugins > Add New > Upload Plugin, or install it from the WordPress Plugin Directory when available.
 2. Activate Payment Integrations for Bachs.
-3. Add the Bachs configuration constants described below to `wp-config.php`.
-4. In your Bachs account, configure the webhook endpoint as `https://example.com/wp-json/etchpoint-bachs/v1/webhook`, replacing `example.com` with your site domain.
-5. Enable Bachs in the supported WordPress integration you want to use.
-6. Use sandbox mode first and confirm checkout, webhook completion, and reconciliation before switching to live mode.
+3. Open Bachs Payments > Settings and choose Sandbox or Live.
+4. Enter the matching Bachs secret API key and webhook signing secret, then save.
+5. Copy the webhook endpoint shown on the settings screen into your Bachs webhook configuration.
+6. Enable Bachs in the supported WordPress integration you want to use.
+7. Use sandbox mode first and confirm checkout, webhook completion, and reconciliation before switching to live mode.
 
 == Configuration ==
 
-The plugin intentionally keeps Bachs secret credentials out of the WordPress database. Configure them in `wp-config.php`.
+Bachs Payments > Settings provides one shared configuration for WooCommerce, Paid Memberships Pro, Gravity Forms, Fluent Forms, and GiveWP.
 
-Required values:
+The active environment requires:
 
-* `ETCHPOINT_BACHS_ENVIRONMENT` - `sandbox` or `live`. Defaults to `sandbox` if omitted.
-* `ETCHPOINT_BACHS_SANDBOX_SECRET_KEY` - sandbox secret key when sandbox mode is active.
-* `ETCHPOINT_BACHS_LIVE_SECRET_KEY` - live secret key when live mode is active.
-* `ETCHPOINT_BACHS_WEBHOOK_SECRET` - active Bachs webhook signing secret.
+* A matching Bachs secret API key (`sk_sandbox_...` for Sandbox or `sk_live_...` for Live).
+* The active Bachs webhook signing secret.
 
-Optional values:
+The settings screen also supports an optional previous webhook secret during secret rotation and an optional organization ID for stricter provider verification.
 
+For sites that prefer secret management through `wp-config.php`, the following constants remain supported and take precedence over dashboard values when defined:
+
+* `ETCHPOINT_BACHS_ENVIRONMENT` - `sandbox` or `live`.
+* `ETCHPOINT_BACHS_SANDBOX_SECRET_KEY` - sandbox secret key.
+* `ETCHPOINT_BACHS_LIVE_SECRET_KEY` - live secret key.
+* `ETCHPOINT_BACHS_WEBHOOK_SECRET` - active webhook signing secret.
 * `ETCHPOINT_BACHS_WEBHOOK_SECRET_PREVIOUS` - previous webhook secret during secret rotation.
-* `ETCHPOINT_BACHS_ORGANIZATION_ID` - pins webhook/payment verification to one Bachs organization when configured.
+* `ETCHPOINT_BACHS_ORGANIZATION_ID` - optional organization identifier.
+
+Dashboard-managed secret values are stored in the WordPress options table and are never displayed back in plaintext after saving. They are deleted when the plugin is uninstalled. Financial/audit records remain retained as described below.
 
 Live payments require HTTPS.
 
@@ -122,7 +129,7 @@ No. Customers enter payment details on Bachs hosted checkout. This plugin does n
 
 = Can I use sandbox mode? =
 
-Yes. Sandbox is the default environment when `ETCHPOINT_BACHS_ENVIRONMENT` is not defined. Use the matching sandbox secret key and webhook configuration.
+Yes. Sandbox is the default environment. Choose Sandbox under Bachs Payments > Settings and use the matching sandbox secret key and webhook configuration.
 
 = What happens if Bachs confirms payment but WordPress fulfillment fails? =
 
