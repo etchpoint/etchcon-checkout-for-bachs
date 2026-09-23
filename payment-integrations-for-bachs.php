@@ -17,6 +17,7 @@
 
 use Etchpoint\BachsIntegrations\Bootstrap\Activation;
 use Etchpoint\BachsIntegrations\Bootstrap\Plugin;
+use Etchpoint\BachsIntegrations\Reconciliation\ReconciliationRuntime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -34,5 +35,6 @@ if ( version_compare( PHP_VERSION, '8.1', '<' ) ) {
 require __DIR__ . '/vendor/autoload.php';
 
 register_activation_hook( __FILE__, array( Activation::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( ReconciliationRuntime::class, 'deactivate' ) );
 
 Plugin::boot( __FILE__ );

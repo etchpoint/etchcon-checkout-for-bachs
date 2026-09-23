@@ -9,10 +9,12 @@ declare(strict_types=1);
 
 namespace Etchpoint\BachsIntegrations\Bootstrap;
 
+use Etchpoint\BachsIntegrations\Admin\AdminPages;
 use Etchpoint\BachsIntegrations\Bachs\Webhook\SharedWebhookEndpoint;
 use Etchpoint\BachsIntegrations\Integrations\PMPro\Integration as PMProIntegration;
 use Etchpoint\BachsIntegrations\Integrations\WooCommerce\Integration as WooCommerceIntegration;
 use Etchpoint\BachsIntegrations\Persistence\Migrator;
+use Etchpoint\BachsIntegrations\Reconciliation\ReconciliationRuntime;
 
 /**
  * Coordinates plugin bootstrap after WordPress loads plugins.
@@ -55,6 +57,8 @@ final class Plugin {
 		add_action( 'rest_api_init', array( SharedWebhookEndpoint::class, 'register_route' ) );
 		WooCommerceIntegration::register( self::$plugin_file );
 		PMProIntegration::register();
+		ReconciliationRuntime::register();
+		AdminPages::register();
 
 		/**
 		 * Fires after the Bachs integration core has passed minimum environment checks.

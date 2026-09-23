@@ -36,6 +36,8 @@ interface CheckoutProvider {
 	 *
 	 * @param string $checkout_id Opaque provider checkout identifier.
 	 * @return CheckoutSession
+	 *
+	 * @throws ApiException When Bachs rejects or cannot process the request.
 	 */
 	public function get( string $checkout_id ): CheckoutSession;
 }

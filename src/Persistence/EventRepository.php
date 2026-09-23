@@ -233,6 +233,23 @@ final class EventRepository implements EventStore {
 	}
 
 	/**
+	 * Count event records that remain failed or require review.
+	 *
+	 * @return int
+	 */
+	public function count_unresolved_events(): int {
+		$sql = (string) $this->wpdb->prepare(
+			'SELECT COUNT(*) FROM %i WHERE processing_status IN (%s, %s)',
+			$this->table,
+			EventProcessingStatus::FAILED->value,
+			EventProcessingStatus::REQUIRES_REVIEW->value
+		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
+		return (int) $this->wpdb->get_var( $sql );
+	}
+
+	/**
 	 * Hydrate a database row into a typed event record.
 	 *
 	 * @param array<string, mixed> $row Database row.

@@ -17,11 +17,12 @@ use Etchpoint\BachsIntegrations\Core\Payment\ApplicationStatus;
 use Etchpoint\BachsIntegrations\Core\Payment\PaymentIntent;
 use Etchpoint\BachsIntegrations\Core\Payment\ProviderStatus;
 use RuntimeException;
+use Etchpoint\BachsIntegrations\Reconciliation\ReconciliationIntentStore;
 
 /**
  * Persists and atomically transitions payment intents using WordPress wpdb.
  */
-final class IntentRepository implements IntentStore, CheckoutIntentStore {
+final class IntentRepository implements IntentStore, CheckoutIntentStore, ReconciliationIntentStore {
 	/** Default stale-processing threshold in seconds. */
 	private const DEFAULT_STALE_SECONDS = 300;
 
@@ -335,6 +336,110 @@ final class IntentRepository implements IntentStore, CheckoutIntentStore {
 	 */
 	public function mark_requires_review( int $id, ?string $code = null, ?string $message = null ): bool {
 		return $this->update_application_failure_state( $id, ApplicationStatus::REQUIRES_REVIEW, $code, $message );
+	}
+
+	/**
+	 * Find a bounded batch of intents that may need Bachs/local reconciliation.
+	 *
+	 * Successful provider state is always eligible when application fulfillment is
+	 * incomplete. Older open/processing attempts are also included so a missed
+	 * webhook can be discovered by retrieving the hosted checkout.
+	 *
+	 * @param int $limit         Maximum rows to return.
+	 * @param int $stale_seconds Minimum age for non-success provider states.
+	 * @return array<int, IntentRecord>
+	 */
+	public function find_reconciliation_candidates( int $limit = 20, int $stale_seconds = 300 ): array {
+		$limit        = max( 1, min( 100, $limit ) );
+		$stale_before = self::utc_timestamp_minus( $stale_seconds );
+		$sql          = (string) $this->wpdb->prepare(
+			'SELECT * FROM %i
+			WHERE checkout_id IS NOT NULL
+			AND application_status IN (%s, %s, %s, %s)
+			AND (
+				provider_status = %s
+				OR charge_id IS NOT NULL
+				OR updated_at < %s
+			)
+			ORDER BY updated_at ASC, id ASC
+			LIMIT %d',
+			$this->table,
+			ApplicationStatus::PENDING->value,
+			ApplicationStatus::FAILED->value,
+			ApplicationStatus::PROCESSING->value,
+			ApplicationStatus::REQUIRES_REVIEW->value,
+			ProviderStatus::SUCCEEDED->value,
+			$stale_before,
+			$limit
+		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
+		$rows = $this->wpdb->get_results( $sql, ARRAY_A );
+		$records = array();
+
+		if ( ! is_array( $rows ) ) {
+			return $records;
+		}
+
+		foreach ( $rows as $row ) {
+			if ( is_array( $row ) ) {
+				$records[] = $this->hydrate( $row );
+			}
+		}
+
+		return $records;
+	}
+
+	/**
+	 * Count unresolved Bachs/local application mismatches.
+	 *
+	 * @return int
+	 */
+	public function count_unresolved_mismatches(): int {
+		$sql = (string) $this->wpdb->prepare(
+			'SELECT COUNT(*) FROM %i
+			WHERE provider_status = %s AND application_status <> %s',
+			$this->table,
+			ProviderStatus::SUCCEEDED->value,
+			ApplicationStatus::APPLIED->value
+		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
+		return (int) $this->wpdb->get_var( $sql );
+	}
+
+	/**
+	 * Move an intent out of manual review after authoritative re-verification.
+	 *
+	 * @param int $id Intent row identifier.
+	 * @return bool Whether the intent is ready for a normal fulfillment claim.
+	 */
+	public function prepare_for_reconciliation( int $id ): bool {
+		$sql = (string) $this->wpdb->prepare(
+			'UPDATE %i
+			SET application_status = %s, processing_started_at = NULL, updated_at = %s
+			WHERE id = %d AND application_status = %s',
+			$this->table,
+			ApplicationStatus::FAILED->value,
+			self::utc_now(),
+			$id,
+			ApplicationStatus::REQUIRES_REVIEW->value
+		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
+		$result = $this->wpdb->query( $sql );
+
+		if ( false === $result ) {
+			return false;
+		}
+
+		if ( 1 === $result ) {
+			return true;
+		}
+
+		$record = $this->find_by_id( $id );
+
+		return null !== $record && ApplicationStatus::FAILED === $record->intent()->application_status();
 	}
 
 	/**
