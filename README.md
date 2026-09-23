@@ -4,7 +4,7 @@ Open-source WordPress payment integrations for Bachs, maintained by Etchpoint.
 
 ## Current version
 
-`1.0.0` is under active development.
+`1.0.0` is being prepared as the first public release candidate.
 
 ## Current integration
 
@@ -48,6 +48,8 @@ composer test
 composer audit
 ```
 
+GitHub CI also builds a production-only plugin directory and runs the official WordPress Plugin Check action against that release candidate.
+
 ## Release packaging
 
 The WordPress.org release ZIP must include the production Composer autoloader and runtime dependencies:
@@ -56,4 +58,6 @@ The WordPress.org release ZIP must include the production Composer autoloader an
 composer install --no-dev --prefer-dist --optimize-autoloader
 ```
 
-The packaged ZIP itself must be tested on a clean WordPress installation before distribution.
+The CI release-candidate job packages only production files and uploads an installable ZIP after Plugin Check passes. The exact packaged ZIP must still be tested on a clean WordPress installation before distribution.
+
+Plugin-owned payment, webhook event, and refund audit records are intentionally retained on uninstall; this behavior is disclosed in `readme.txt`.

@@ -44,3 +44,46 @@ jobs:
 
       - name: Unit tests
         run: composer test
+
+  plugin-check:
+    name: WordPress Plugin Check
+    needs: quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install production autoloader
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Build release candidate
+        run: .github/scripts/build-release.sh
+
+      - name: Run WordPress Plugin Check
+        uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: './build/payment-integrations-for-bachs'
+          wp-version: 'latest'
+          include-experimental: 'false'
+
+      - name: Package release candidate
+        if: ${{ success() }}
+        run: |
+          cd build
+          zip -qr payment-integrations-for-bachs.zip payment-integrations-for-bachs
+
+      - name: Upload release candidate
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: payment-integrations-for-bachs-release-candidate
+          path: build/payment-integrations-for-bachs.zip
+          if-no-files-found: error
