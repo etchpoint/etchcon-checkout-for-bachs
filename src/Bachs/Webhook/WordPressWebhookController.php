@@ -11,6 +11,8 @@ namespace Etchpoint\BachsIntegrations\Bachs\Webhook;
 
 use Etchpoint\BachsIntegrations\Core\Payment\FulfillmentDisposition;
 use Etchpoint\BachsIntegrations\Core\Payment\FulfillmentRegistry;
+use Etchpoint\BachsIntegrations\Core\Refund\RefundFulfillmentDisposition;
+use Etchpoint\BachsIntegrations\Core\Refund\RefundFulfillmentRegistry;
 use RuntimeException;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -51,12 +53,28 @@ final class WordPressWebhookController {
 	private array $signing_secrets;
 
 	/**
+	 * Optional refund webhook processor.
+	 *
+	 * @var RefundWebhookProcessor|null
+	 */
+	private ?RefundWebhookProcessor $refund_processor;
+
+	/**
+	 * Optional refund fulfillment registry.
+	 *
+	 * @var RefundFulfillmentRegistry|null
+	 */
+	private ?RefundFulfillmentRegistry $refund_fulfillment;
+
+	/**
 	 * Create the webhook controller.
 	 *
-	 * @param WebhookSignatureVerifier $verifier        Signature verifier.
-	 * @param WebhookProcessor         $processor       Verified event processor.
-	 * @param FulfillmentRegistry      $fulfillment     Host fulfillment registry.
-	 * @param array<int, string>       $signing_secrets Active signing secrets.
+	 * @param WebhookSignatureVerifier       $verifier           Signature verifier.
+	 * @param WebhookProcessor               $processor          Verified event processor.
+	 * @param FulfillmentRegistry            $fulfillment        Host fulfillment registry.
+	 * @param array<int, string>             $signing_secrets    Active signing secrets.
+	 * @param RefundWebhookProcessor|null    $refund_processor   Optional refund event processor.
+	 * @param RefundFulfillmentRegistry|null $refund_fulfillment Optional refund fulfillment registry.
 	 *
 	 * @throws RuntimeException When no signing secret is configured.
 	 */
@@ -64,16 +82,20 @@ final class WordPressWebhookController {
 		WebhookSignatureVerifier $verifier,
 		WebhookProcessor $processor,
 		FulfillmentRegistry $fulfillment,
-		array $signing_secrets
+		array $signing_secrets,
+		?RefundWebhookProcessor $refund_processor = null,
+		?RefundFulfillmentRegistry $refund_fulfillment = null
 	) {
 		if ( array() === $signing_secrets ) {
 			throw new RuntimeException( 'At least one Bachs webhook signing secret is required.' );
 		}
 
-		$this->verifier        = $verifier;
-		$this->processor       = $processor;
-		$this->fulfillment     = $fulfillment;
-		$this->signing_secrets = $signing_secrets;
+		$this->verifier           = $verifier;
+		$this->processor          = $processor;
+		$this->fulfillment        = $fulfillment;
+		$this->signing_secrets    = $signing_secrets;
+		$this->refund_processor   = $refund_processor;
+		$this->refund_fulfillment = $refund_fulfillment;
 	}
 
 	/**
@@ -103,6 +125,14 @@ final class WordPressWebhookController {
 		}
 
 		try {
+			if ( null !== $this->refund_processor ) {
+				$refund_result = $this->refund_processor->process_if_refund( $verified_signature, $raw_body );
+
+				if ( null !== $refund_result ) {
+					return $this->handle_refund_result( $refund_result );
+				}
+			}
+
 			$result = $this->processor->process( $verified_signature, $raw_body );
 		} catch ( WebhookProcessingException ) {
 			return self::response( 400, 'webhook_invalid' );
@@ -137,6 +167,47 @@ final class WordPressWebhookController {
 
 		if ( WebhookProcessingDisposition::RETRYABLE_FAILURE === $result->disposition() ) {
 			return self::response( 500, 'retryable_failure' );
+		}
+
+		return self::response( 200, $result->disposition()->value );
+	}
+
+	/**
+	 * Dispatch a processed refund event to the matching host integration.
+	 *
+	 * @param RefundWebhookProcessingResult $result Refund processing result.
+	 * @return WP_REST_Response
+	 */
+	private function handle_refund_result( RefundWebhookProcessingResult $result ): WP_REST_Response {
+		if ( RefundWebhookProcessingDisposition::READY_FOR_FULFILLMENT === $result->disposition() ) {
+			$refund = $result->verified_refund();
+
+			if ( null === $refund || null === $result->refund_id() ) {
+				return self::response( 500, 'refund_fulfillment_evidence_missing' );
+			}
+
+			if ( null === $this->refund_fulfillment ) {
+				return self::response( 503, 'refund_fulfillment_unavailable' );
+			}
+
+			$handler = $this->refund_fulfillment->find( $refund->integration() );
+
+			if ( null === $handler ) {
+				return self::response( 503, 'refund_handler_unavailable' );
+			}
+
+			$disposition = $handler->fulfill( $result->refund_id(), $result->event_id(), $refund );
+
+			return match ( $disposition ) {
+				RefundFulfillmentDisposition::APPLIED,
+				RefundFulfillmentDisposition::DUPLICATE,
+				RefundFulfillmentDisposition::REQUIRES_REVIEW => self::response( 200, 'refund_' . $disposition->value ),
+				RefundFulfillmentDisposition::RETRYABLE_FAILURE => self::response( 500, 'refund_' . $disposition->value ),
+			};
+		}
+
+		if ( RefundWebhookProcessingDisposition::RETRYABLE_FAILURE === $result->disposition() ) {
+			return self::response( 500, $result->disposition()->value );
 		}
 
 		return self::response( 200, $result->disposition()->value );

@@ -128,6 +128,31 @@ final class Money {
 	}
 
 	/**
+	 * Determine whether this amount is less than or equal to another amount.
+	 *
+	 * @param self $other Money to compare.
+	 * @return bool
+	 *
+	 * @throws InvalidArgumentException When currencies differ.
+	 */
+	public function is_less_than_or_equal( self $other ): bool {
+		if ( ! $this->currency->equals( $other->currency ) ) {
+			throw new InvalidArgumentException( 'Money values with different currencies cannot be ordered.' );
+		}
+
+		$left  = ltrim( str_replace( '.', '', $this->amount ), '0' );
+		$right = ltrim( str_replace( '.', '', $other->amount ), '0' );
+		$left  = '' === $left ? '0' : $left;
+		$right = '' === $right ? '0' : $right;
+
+		if ( strlen( $left ) !== strlen( $right ) ) {
+			return strlen( $left ) < strlen( $right );
+		}
+
+		return strcmp( $left, $right ) <= 0;
+	}
+
+	/**
 	 * Render the canonical decimal amount.
 	 *
 	 * @return string

@@ -18,7 +18,9 @@ namespace Give\Framework\Support\ValueObjects {
 namespace Give\Donations\ValueObjects {
 	class DonationStatus {
 		public static function COMPLETE(): self { return new self(); }
+		public static function REFUNDED(): self { return new self(); }
 		public function isComplete(): bool { return false; }
+		public function isRefunded(): bool { return false; }
 	}
 }
 

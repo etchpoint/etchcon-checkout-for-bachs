@@ -112,4 +112,29 @@ final class MoneyTest extends TestCase {
 		self::assertFalse( Money::from_decimal( '0', $currency )->is_positive() );
 		self::assertTrue( Money::from_decimal( '0.01', $currency )->is_positive() );
 	}
+
+	/**
+	 * Verify exact ordering works without floating point.
+	 *
+	 * @return void
+	 */
+	public function test_less_than_or_equal_compares_exact_amounts(): void {
+		$currency = Currency::from_code( 'USD' );
+
+		self::assertTrue( Money::from_decimal( '9.99', $currency )->is_less_than_or_equal( Money::from_decimal( '10.00', $currency ) ) );
+		self::assertTrue( Money::from_decimal( '10.00', $currency )->is_less_than_or_equal( Money::from_decimal( '10.00', $currency ) ) );
+		self::assertFalse( Money::from_decimal( '10.01', $currency )->is_less_than_or_equal( Money::from_decimal( '10.00', $currency ) ) );
+	}
+
+	/**
+	 * Verify ordering rejects different currencies.
+	 *
+	 * @return void
+	 */
+	public function test_less_than_or_equal_rejects_different_currencies(): void {
+		$this->expectException( InvalidArgumentException::class );
+
+		Money::from_decimal( '10.00', Currency::from_code( 'USD' ) )
+			->is_less_than_or_equal( Money::from_decimal( '10.00', Currency::from_code( 'NGN' ) ) );
+	}
 }

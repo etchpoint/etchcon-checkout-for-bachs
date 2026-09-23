@@ -21,6 +21,9 @@ final class Endpoints {
 	/** Payment collection endpoint. */
 	public const PAYMENTS = '/v1/payments';
 
+	/** Refund collection endpoint. */
+	public const REFUNDS = '/v1/refunds';
+
 	/**
 	 * Build the checkout-session retrieval endpoint.
 	 *
@@ -39,6 +42,26 @@ final class Endpoints {
 	 */
 	public static function payment( string $payment_id ): string {
 		return self::resource_path( self::PAYMENTS, $payment_id, 'Payment ID' );
+	}
+
+	/**
+	 * Build the refund retrieval endpoint.
+	 *
+	 * @param string $refund_id Opaque Bachs refund identifier.
+	 * @return string
+	 */
+	public static function refund( string $refund_id ): string {
+		return self::resource_path( self::REFUNDS, $refund_id, 'Refund ID' );
+	}
+
+	/**
+	 * Build the refund lookup endpoint for a charge.
+	 *
+	 * @param string $charge_id Opaque Bachs payment/charge identifier.
+	 * @return string
+	 */
+	public static function refund_by_charge( string $charge_id ): string {
+		return self::resource_path( self::REFUNDS . '/by-charge', $charge_id, 'Payment ID' );
 	}
 
 	/**

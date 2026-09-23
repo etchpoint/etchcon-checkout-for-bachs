@@ -14,7 +14,7 @@ namespace Etchpoint\BachsIntegrations\Persistence;
  */
 final class Schema {
 	/** Current database schema version. */
-	public const VERSION = '2';
+	public const VERSION = '3';
 
 	/** Option used to track the installed schema version. */
 	public const VERSION_OPTION = 'etchpoint_bachs_schema_version';
@@ -24,6 +24,9 @@ final class Schema {
 
 	/** Event table suffix without the WordPress table prefix. */
 	private const EVENTS_TABLE = 'etchpoint_bachs_events';
+
+	/** Refund table suffix without the WordPress table prefix. */
+	private const REFUNDS_TABLE = 'etchpoint_bachs_refunds';
 
 	/**
 	 * Build the fully qualified payment-intent table name.
@@ -43,6 +46,16 @@ final class Schema {
 	 */
 	public static function events_table( string $prefix ): string {
 		return $prefix . self::EVENTS_TABLE;
+	}
+
+	/**
+	 * Build the fully qualified refund table name.
+	 *
+	 * @param string $prefix WordPress database table prefix.
+	 * @return string
+	 */
+	public static function refunds_table( string $prefix ): string {
+		return $prefix . self::REFUNDS_TABLE;
 	}
 
 	/**
@@ -119,4 +132,51 @@ final class Schema {
 			. "KEY intent_lookup (intent_id)\n"
 			. ") {$charset_collate};";
 	}
+
+	/**
+	 * Build the refund-operation dbDelta SQL statement.
+	 *
+	 * @param string $prefix          WordPress database table prefix.
+	 * @param string $charset_collate WordPress charset/collation clause.
+	 * @return string
+	 */
+	public static function refunds_sql( string $prefix, string $charset_collate ): string {
+		$table = self::refunds_table( $prefix );
+
+		return "CREATE TABLE {$table} (\n"
+			. "id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,\n"
+			. "uuid CHAR(36) NOT NULL,\n"
+			. "intent_id BIGINT UNSIGNED NOT NULL,\n"
+			. "integration VARCHAR(32) NOT NULL,\n"
+			. "local_object_type VARCHAR(64) NOT NULL,\n"
+			. "local_object_id VARCHAR(191) NOT NULL,\n"
+			. "environment VARCHAR(16) NOT NULL,\n"
+			. "charge_id VARCHAR(191) NOT NULL,\n"
+			. "provider_refund_id VARCHAR(191) NULL,\n"
+			. "reference VARCHAR(128) NOT NULL,\n"
+			. "idempotency_key VARCHAR(255) NOT NULL,\n"
+			. "requested_amount VARCHAR(40) NOT NULL,\n"
+			. "currency VARCHAR(12) NOT NULL,\n"
+			. "refunded_amount VARCHAR(40) NULL,\n"
+			. "provider_status VARCHAR(40) NOT NULL DEFAULT 'requested',\n"
+			. "application_status VARCHAR(40) NOT NULL DEFAULT 'pending',\n"
+			. "processing_started_at DATETIME NULL,\n"
+			. "reason TEXT NULL,\n"
+			. "local_refund_id VARCHAR(191) NULL,\n"
+			. "last_error_code VARCHAR(100) NULL,\n"
+			. "last_error_message TEXT NULL,\n"
+			. "created_at DATETIME NOT NULL,\n"
+			. "updated_at DATETIME NOT NULL,\n"
+			. "completed_at DATETIME NULL,\n"
+			. "PRIMARY KEY  (id),\n"
+			. "UNIQUE KEY uuid (uuid),\n"
+			. "UNIQUE KEY refund_charge_id (charge_id),\n"
+			. "UNIQUE KEY provider_refund_id (provider_refund_id),\n"
+			. "UNIQUE KEY refund_reference (reference),\n"
+			. "UNIQUE KEY refund_idempotency_key (idempotency_key),\n"
+			. "KEY intent_lookup (intent_id),\n"
+			. "KEY refund_state_lookup (provider_status, application_status)\n"
+			. ") {$charset_collate};";
+	}
+
 }

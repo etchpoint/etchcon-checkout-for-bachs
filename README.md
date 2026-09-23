@@ -8,7 +8,13 @@ Open-source WordPress payment integrations for Bachs, maintained by Etchpoint.
 
 ## Current integration
 
-WooCommerce, Paid Memberships Pro, Gravity Forms, Fluent Forms Pro, and GiveWP one-time hosted checkout integrations are implemented on the shared payment core. The core provides payment intents, exact money handling, Bachs API access, signed webhook verification, event deduplication, and verified payment evidence.
+WooCommerce, Paid Memberships Pro, Gravity Forms, Fluent Forms Pro, and GiveWP one-time hosted checkout integrations are implemented on the shared payment core. The core provides payment intents, exact money handling, Bachs API access, signed webhook verification, event deduplication, verified payment evidence, reconciliation, and provider-confirmed refunds.
+
+## Refunds
+
+Bachs refunds are requested from **Bachs Payments → Refunds**. Full and partial refunds are supported, but each Bachs charge can have only one refund operation. A partial refund therefore consumes the refund operation for that charge.
+
+The plugin persists the logical refund before contacting Bachs, uses a stable idempotency key, and waits for signed refund webhook evidence before finalizing the corresponding WooCommerce, Paid Memberships Pro, Gravity Forms, Fluent Forms, or GiveWP record. Configure the Bachs webhook endpoint to receive the refund lifecycle events used by your account, including `refund.created`, `refund.paid`, and `refund.failed`.
 
 ## Architecture
 

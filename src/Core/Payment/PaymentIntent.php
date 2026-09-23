@@ -198,7 +198,6 @@ final class PaymentIntent {
 		);
 	}
 
-
 	/**
 	 * Rehydrate a payment intent from trusted plugin persistence.
 	 *

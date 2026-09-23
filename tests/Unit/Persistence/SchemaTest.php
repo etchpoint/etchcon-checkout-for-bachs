@@ -24,6 +24,7 @@ final class SchemaTest extends TestCase {
 	public function test_table_names_use_wordpress_prefix(): void {
 		self::assertSame( 'wp_etchpoint_bachs_intents', Schema::intents_table( 'wp_' ) );
 		self::assertSame( 'client_etchpoint_bachs_events', Schema::events_table( 'client_' ) );
+		self::assertSame( 'wp_etchpoint_bachs_refunds', Schema::refunds_table( 'wp_' ) );
 	}
 
 	/**
@@ -49,6 +50,20 @@ final class SchemaTest extends TestCase {
 		$sql = Schema::intents_sql( 'wp_', '' );
 
 		self::assertStringContainsString( 'processing_started_at DATETIME NULL', $sql );
+	}
+
+	/**
+	 * Verify one refund operation is permitted per provider charge.
+	 *
+	 * @return void
+	 */
+	public function test_refund_schema_enforces_one_operation_per_charge(): void {
+		$sql = Schema::refunds_sql( 'wp_', '' );
+
+		self::assertStringContainsString( 'UNIQUE KEY refund_charge_id (charge_id)', $sql );
+		self::assertStringContainsString( 'UNIQUE KEY provider_refund_id (provider_refund_id)', $sql );
+		self::assertStringContainsString( 'UNIQUE KEY refund_reference (reference)', $sql );
+		self::assertStringContainsString( 'UNIQUE KEY refund_idempotency_key (idempotency_key)', $sql );
 	}
 
 	/**

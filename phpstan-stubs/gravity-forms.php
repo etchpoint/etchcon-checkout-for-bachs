@@ -51,6 +51,8 @@ class GFCommon {
 class GFAPI {
 	/** @return array<string, mixed>|WP_Error */
 	public static function get_entry( $entry_id ) { return array(); }
+	public static function update_entry_property( $entry_id, $property, $value ): bool { return true; }
+	public static function add_note( $entry_id, $user_id, $user_name, $note, $note_type = 'user', $sub_type = null ): int { return 1; }
 }
 
 /** @return mixed */

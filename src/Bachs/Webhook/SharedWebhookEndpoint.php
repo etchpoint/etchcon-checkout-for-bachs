@@ -11,16 +11,25 @@ namespace Etchpoint\BachsIntegrations\Bachs\Webhook;
 
 use Etchpoint\BachsIntegrations\Bachs\ApiClient;
 use Etchpoint\BachsIntegrations\Bachs\PaymentsApi;
+use Etchpoint\BachsIntegrations\Bachs\RefundsApi;
 use Etchpoint\BachsIntegrations\Bachs\RuntimeConfiguration;
 use Etchpoint\BachsIntegrations\Core\Contracts\PaymentFulfillmentHandler;
+use Etchpoint\BachsIntegrations\Core\Contracts\RefundFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Core\Payment\FulfillmentRegistry;
+use Etchpoint\BachsIntegrations\Core\Refund\RefundFulfillmentRegistry;
 use Etchpoint\BachsIntegrations\Integrations\FluentForms\FluentFormsFulfillmentHandler;
+use Etchpoint\BachsIntegrations\Integrations\FluentForms\FluentFormsRefundFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\GiveWP\GiveWPFulfillmentHandler;
+use Etchpoint\BachsIntegrations\Integrations\GiveWP\GiveWPRefundFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\GravityForms\GravityFormsFulfillmentHandler;
+use Etchpoint\BachsIntegrations\Integrations\GravityForms\GravityFormsRefundFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\PMPro\PMProFulfillmentHandler;
+use Etchpoint\BachsIntegrations\Integrations\PMPro\PMProRefundFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Integrations\WooCommerce\WooCommerceFulfillmentHandler;
+use Etchpoint\BachsIntegrations\Integrations\WooCommerce\WooCommerceRefundFulfillmentHandler;
 use Etchpoint\BachsIntegrations\Persistence\EventRepository;
 use Etchpoint\BachsIntegrations\Persistence\IntentRepository;
+use Etchpoint\BachsIntegrations\Persistence\RefundRepository;
 use Throwable;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -61,11 +70,11 @@ final class SharedWebhookEndpoint {
 	 */
 	public static function handle( WP_REST_Request $request ): WP_REST_Response {
 		try {
-			$configuration = RuntimeConfiguration::from_wordpress();
-			$client        = new ApiClient( $configuration->environment(), $configuration->api_key() );
-			$intents       = self::intent_repository();
-			$events        = self::event_repository();
-			$processor     = new WebhookProcessor(
+			$configuration    = RuntimeConfiguration::from_wordpress();
+			$client           = new ApiClient( $configuration->environment(), $configuration->api_key() );
+			$intents          = self::intent_repository();
+			$events           = self::event_repository();
+			$processor        = new WebhookProcessor(
 				$events,
 				$intents,
 				new PaymentsApi( $client ),
@@ -73,11 +82,23 @@ final class SharedWebhookEndpoint {
 				$configuration->environment(),
 				$configuration->organization_id()
 			);
-			$controller    = new WordPressWebhookController(
+			$refunds          = self::refund_repository();
+			$refund_processor = new RefundWebhookProcessor(
+				$events,
+				$intents,
+				$refunds,
+				new RefundsApi( $client ),
+				new WebhookEventParser(),
+				$configuration->environment(),
+				$configuration->organization_id()
+			);
+			$controller       = new WordPressWebhookController(
 				new WebhookSignatureVerifier(),
 				$processor,
 				new FulfillmentRegistry( self::fulfillment_handlers( $intents, $events ) ),
-				$configuration->webhook_secrets()
+				$configuration->webhook_secrets(),
+				$refund_processor,
+				new RefundFulfillmentRegistry( self::refund_fulfillment_handlers( $refunds, $events ) )
 			);
 
 			return $controller->handle( $request );
@@ -123,6 +144,35 @@ final class SharedWebhookEndpoint {
 	}
 
 	/**
+	 * Build refund fulfillment handlers for integrations available in this request.
+	 *
+	 * @param RefundRepository $refunds Refund repository.
+	 * @param EventRepository  $events  Event inbox repository.
+	 * @return array<int, RefundFulfillmentHandler>
+	 */
+	private static function refund_fulfillment_handlers( RefundRepository $refunds, EventRepository $events ): array {
+		$handlers = array();
+
+		if ( class_exists( 'WC_Order' ) ) {
+			$handlers[] = new WooCommerceRefundFulfillmentHandler( $refunds, $events );
+		}
+		if ( class_exists( 'MemberOrder' ) ) {
+			$handlers[] = new PMProRefundFulfillmentHandler( $refunds, $events );
+		}
+		if ( class_exists( 'GFPaymentAddOn' ) ) {
+			$handlers[] = new GravityFormsRefundFulfillmentHandler( $refunds, $events );
+		}
+		if ( class_exists( 'FluentFormPro\\Payments\\PaymentMethods\\BaseProcessor' ) ) {
+			$handlers[] = new FluentFormsRefundFulfillmentHandler( $refunds, $events );
+		}
+		if ( class_exists( 'Give\\Donations\\Models\\Donation' ) ) {
+			$handlers[] = new GiveWPRefundFulfillmentHandler( $refunds, $events );
+		}
+
+		return $handlers;
+	}
+
+	/**
 	 * Create the payment-intent repository.
 	 *
 	 * @return IntentRepository
@@ -131,6 +181,17 @@ final class SharedWebhookEndpoint {
 		global $wpdb;
 
 		return new IntentRepository( $wpdb );
+	}
+
+	/**
+	 * Create the refund repository.
+	 *
+	 * @return RefundRepository
+	 */
+	private static function refund_repository(): RefundRepository {
+		global $wpdb;
+
+		return new RefundRepository( $wpdb );
 	}
 
 	/**

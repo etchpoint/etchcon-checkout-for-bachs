@@ -47,6 +47,7 @@ final class Migrator {
 
 		dbDelta( Schema::intents_sql( $wpdb->prefix, $charset_collate ) );
 		dbDelta( Schema::events_sql( $wpdb->prefix, $charset_collate ) );
+		dbDelta( Schema::refunds_sql( $wpdb->prefix, $charset_collate ) );
 
 		update_option( Schema::VERSION_OPTION, Schema::VERSION, false );
 	}

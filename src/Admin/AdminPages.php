@@ -16,6 +16,8 @@ use Etchpoint\BachsIntegrations\Diagnostics\DiagnosticStatus;
 use Etchpoint\BachsIntegrations\Persistence\EventRepository;
 use Etchpoint\BachsIntegrations\Persistence\IntentRepository;
 use Etchpoint\BachsIntegrations\Reconciliation\ReconciliationRuntime;
+use Etchpoint\BachsIntegrations\Refunds\RefundRequestException;
+use Etchpoint\BachsIntegrations\Refunds\RefundsRuntime;
 use Throwable;
 
 /**
@@ -34,8 +36,14 @@ final class AdminPages {
 	/** Diagnostics page slug. */
 	private const DIAGNOSTICS_SLUG = 'etchpoint-bachs-diagnostics';
 
+	/** Refunds page slug. */
+	private const REFUNDS_SLUG = 'etchpoint-bachs-refunds';
+
 	/** Manual reconciliation action. */
 	private const RECONCILE_ACTION = 'etchpoint_bachs_reconcile_intent';
+
+	/** Manual refund request action. */
+	private const REFUND_ACTION = 'etchpoint_bachs_request_refund';
 
 	/**
 	 * Register admin hooks.
@@ -45,6 +53,7 @@ final class AdminPages {
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'register_menu' ) );
 		add_action( 'admin_post_' . self::RECONCILE_ACTION, array( self::class, 'handle_reconcile' ) );
+		add_action( 'admin_post_' . self::REFUND_ACTION, array( self::class, 'handle_refund' ) );
 	}
 
 	/**
@@ -69,6 +78,15 @@ final class AdminPages {
 			self::CAPABILITY,
 			self::RECONCILIATION_SLUG,
 			array( self::class, 'render_reconciliation' )
+		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
+			__( 'Refunds', 'payment-integrations-for-bachs' ),
+			__( 'Refunds', 'payment-integrations-for-bachs' ),
+			self::CAPABILITY,
+			self::REFUNDS_SLUG,
+			array( self::class, 'render_refunds' )
 		);
 
 		add_submenu_page(
@@ -167,6 +185,118 @@ final class AdminPages {
 	}
 
 	/**
+	 * Render refund candidates and recent refund operations.
+	 *
+	 * @return void
+	 */
+	public static function render_refunds(): void {
+		self::assert_capability();
+		$candidates = RefundsRuntime::refundable_candidates( 50 );
+		$recent     = RefundsRuntime::recent( 50 );
+		$notice     = self::refund_notice_code();
+		?>
+		<div class="wrap">
+			<h1><?php echo esc_html__( 'Bachs Refunds', 'payment-integrations-for-bachs' ); ?></h1>
+			<p><?php echo esc_html__( 'Refunds are requested from Bachs here and finalized in WordPress only after a signed refund webhook confirms settlement.', 'payment-integrations-for-bachs' ); ?></p>
+			<div class="notice notice-warning inline"><p><?php echo esc_html__( 'Bachs allows one refund operation per charge. If you request a partial refund, you cannot later submit a second refund for the remaining balance on that charge.', 'payment-integrations-for-bachs' ); ?></p></div>
+			<?php if ( null !== $notice ) : ?>
+				<div class="notice notice-info inline"><p><?php echo esc_html( $notice ); ?></p></div>
+			<?php endif; ?>
+
+			<h2><?php echo esc_html__( 'Refundable payments', 'payment-integrations-for-bachs' ); ?></h2>
+			<table class="widefat striped">
+				<thead><tr><th><?php echo esc_html__( 'Payment', 'payment-integrations-for-bachs' ); ?></th><th><?php echo esc_html__( 'Integration', 'payment-integrations-for-bachs' ); ?></th><th><?php echo esc_html__( 'Local record', 'payment-integrations-for-bachs' ); ?></th><th><?php echo esc_html__( 'Original amount', 'payment-integrations-for-bachs' ); ?></th><th><?php echo esc_html__( 'Refund', 'payment-integrations-for-bachs' ); ?></th></tr></thead>
+				<tbody>
+				<?php if ( array() === $candidates ) : ?>
+					<tr><td colspan="5"><?php echo esc_html__( 'No refundable Bachs payments found.', 'payment-integrations-for-bachs' ); ?></td></tr>
+				<?php else : ?>
+					<?php foreach ( $candidates as $candidate ) : ?>
+						<?php $intent = $candidate->intent(); ?>
+						<tr>
+							<td><?php echo esc_html( (string) $candidate->id() ); ?></td>
+							<td><?php echo esc_html( $intent->integration() ); ?></td>
+							<td><?php echo esc_html( $intent->local_object_type() . ' #' . $intent->local_object_id() ); ?></td>
+							<td><?php echo esc_html( $intent->expected_amount()->currency()->code() . ' ' . $intent->expected_amount()->amount() ); ?></td>
+							<td>
+								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+									<input type="hidden" name="action" value="<?php echo esc_attr( self::REFUND_ACTION ); ?>" />
+									<input type="hidden" name="intent_id" value="<?php echo esc_attr( (string) $candidate->id() ); ?>" />
+									<label class="screen-reader-text" for="bachs-refund-amount-<?php echo esc_attr( (string) $candidate->id() ); ?>"><?php echo esc_html__( 'Refund amount', 'payment-integrations-for-bachs' ); ?></label>
+									<input id="bachs-refund-amount-<?php echo esc_attr( (string) $candidate->id() ); ?>" name="amount" type="text" inputmode="decimal" value="<?php echo esc_attr( $intent->expected_amount()->amount() ); ?>" required />
+									<label class="screen-reader-text" for="bachs-refund-reason-<?php echo esc_attr( (string) $candidate->id() ); ?>"><?php echo esc_html__( 'Refund reason', 'payment-integrations-for-bachs' ); ?></label>
+									<input id="bachs-refund-reason-<?php echo esc_attr( (string) $candidate->id() ); ?>" name="reason" type="text" maxlength="500" placeholder="<?php echo esc_attr__( 'Optional reason', 'payment-integrations-for-bachs' ); ?>" />
+									<?php wp_nonce_field( self::REFUND_ACTION . '_' . $candidate->id() ); ?>
+									<?php submit_button( __( 'Request refund', 'payment-integrations-for-bachs' ), 'secondary small', 'submit', false ); ?>
+								</form>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				<?php endif; ?>
+				</tbody>
+			</table>
+
+			<h2><?php echo esc_html__( 'Recent refunds', 'payment-integrations-for-bachs' ); ?></h2>
+			<table class="widefat striped">
+				<thead><tr><th><?php echo esc_html__( 'Refund', 'payment-integrations-for-bachs' ); ?></th><th><?php echo esc_html__( 'Integration', 'payment-integrations-for-bachs' ); ?></th><th><?php echo esc_html__( 'Amount', 'payment-integrations-for-bachs' ); ?></th><th><?php echo esc_html__( 'Bachs state', 'payment-integrations-for-bachs' ); ?></th><th><?php echo esc_html__( 'WordPress state', 'payment-integrations-for-bachs' ); ?></th></tr></thead>
+				<tbody>
+				<?php if ( array() === $recent ) : ?>
+					<tr><td colspan="5"><?php echo esc_html__( 'No Bachs refunds have been requested yet.', 'payment-integrations-for-bachs' ); ?></td></tr>
+				<?php else : ?>
+					<?php foreach ( $recent as $refund ) : ?>
+						<tr>
+							<td><?php echo esc_html( null !== $refund->provider_refund_id() ? $refund->provider_refund_id() : (string) $refund->id() ); ?></td>
+							<td><?php echo esc_html( $refund->integration() . ' · ' . $refund->local_object_type() . ' #' . $refund->local_object_id() ); ?></td>
+							<td><?php echo esc_html( $refund->requested_amount()->currency()->code() . ' ' . $refund->requested_amount()->amount() ); ?></td>
+							<td><?php echo esc_html( $refund->provider_status()->value ); ?></td>
+							<td><?php echo esc_html( $refund->application_status()->value ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				<?php endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Handle one authorized refund request.
+	 *
+	 * @return void
+	 */
+	public static function handle_refund(): void {
+		self::assert_capability();
+		$intent_id = isset( $_POST['intent_id'] ) ? absint( wp_unslash( $_POST['intent_id'] ) ) : 0;
+
+		if ( 1 > $intent_id ) {
+			wp_die( esc_html__( 'Invalid payment intent.', 'payment-integrations-for-bachs' ) );
+		}
+
+		check_admin_referer( self::REFUND_ACTION . '_' . $intent_id );
+		$amount = isset( $_POST['amount'] ) ? sanitize_text_field( wp_unslash( $_POST['amount'] ) ) : '';
+		$reason = isset( $_POST['reason'] ) ? sanitize_textarea_field( wp_unslash( $_POST['reason'] ) ) : '';
+		$status = 'requested';
+
+		try {
+			$refund = RefundsRuntime::request( $intent_id, $amount, '' === $reason ? null : $reason );
+			$status = $refund->provider_status()->value;
+		} catch ( RefundRequestException $exception ) {
+			$status = $exception->safe_code();
+		} catch ( Throwable ) {
+			$status = 'unavailable';
+		}
+
+		$url = add_query_arg(
+			array(
+				'bachs_refund'       => $status,
+				'bachs_refund_nonce' => wp_create_nonce( 'etchpoint_bachs_refund_notice' ),
+			),
+			admin_url( 'admin.php?page=' . self::REFUNDS_SLUG )
+		);
+		wp_safe_redirect( $url );
+		exit;
+	}
+
+	/**
 	 * Render safe operational diagnostics.
 	 *
 	 * @return void
@@ -243,6 +373,28 @@ final class AdminPages {
 		return sprintf(
 			/* translators: %s: reconciliation result code. */
 			__( 'Reconciliation result: %s', 'payment-integrations-for-bachs' ),
+			$status
+		);
+	}
+
+	/**
+	 * Read and normalize the refund result query parameter.
+	 *
+	 * @return string|null
+	 */
+	private static function refund_notice_code(): ?string {
+		if ( ! isset( $_GET['bachs_refund'], $_GET['bachs_refund_nonce'] ) ) {
+			return null;
+		}
+		$nonce = sanitize_text_field( wp_unslash( $_GET['bachs_refund_nonce'] ) );
+		if ( ! wp_verify_nonce( $nonce, 'etchpoint_bachs_refund_notice' ) ) {
+			return null;
+		}
+		$status = sanitize_key( wp_unslash( $_GET['bachs_refund'] ) );
+
+		return sprintf(
+			/* translators: %s: refund request result code. */
+			__( 'Refund result: %s', 'payment-integrations-for-bachs' ),
 			$status
 		);
 	}

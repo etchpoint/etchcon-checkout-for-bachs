@@ -175,6 +175,16 @@ final class IntentRepository implements IntentStore, CheckoutIntentStore, Reconc
 	}
 
 	/**
+	 * Find an intent by its successful provider charge identifier.
+	 *
+	 * @param string $charge_id Provider payment/charge identifier.
+	 * @return IntentRecord|null
+	 */
+	public function find_by_charge_id( string $charge_id ): ?IntentRecord {
+		return $this->find_one( 'charge_id', $charge_id );
+	}
+
+	/**
 	 * Attach the provider checkout identifier after checkout creation.
 	 *
 	 * @param int    $id          Intent row identifier.
@@ -389,6 +399,42 @@ final class IntentRepository implements IntentStore, CheckoutIntentStore, Reconc
 	}
 
 	/**
+	 * Find payments that are locally fulfilled and may be refunded.
+	 *
+	 * @param int $limit Maximum rows to return.
+	 * @return array<int, IntentRecord>
+	 */
+	public function find_refundable_candidates( int $limit = 50 ): array {
+		$limit = max( 1, min( 100, $limit ) );
+		$sql   = (string) $this->wpdb->prepare(
+			'SELECT * FROM %i
+			WHERE provider_status = %s
+			AND application_status = %s
+			AND charge_id IS NOT NULL
+			ORDER BY completed_at DESC, id DESC
+			LIMIT %d',
+			$this->table,
+			ProviderStatus::SUCCEEDED->value,
+			ApplicationStatus::APPLIED->value,
+			$limit
+		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
+		$rows = $this->wpdb->get_results( $sql, ARRAY_A );
+
+		if ( ! is_array( $rows ) ) {
+			return array();
+		}
+
+		$records = array();
+
+		foreach ( $rows as $row ) {
+			$records[] = $this->hydrate( $row );
+		}
+
+		return $records;
+	}
+
+	/**
 	 * Count unresolved Bachs/local application mismatches.
 	 *
 	 * @return int
@@ -450,7 +496,7 @@ final class IntentRepository implements IntentStore, CheckoutIntentStore, Reconc
 	 * @throws RuntimeException When an unsupported lookup column is requested.
 	 */
 	private function find_one( string $column, string $value ): ?IntentRecord {
-		$allowed_columns = array( 'uuid', 'reference', 'checkout_id' );
+		$allowed_columns = array( 'uuid', 'reference', 'checkout_id', 'charge_id' );
 
 		if ( ! in_array( $column, $allowed_columns, true ) ) {
 			throw new RuntimeException( 'Unsupported payment-intent lookup column.' );

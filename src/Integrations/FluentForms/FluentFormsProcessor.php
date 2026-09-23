@@ -15,6 +15,7 @@ use Etchpoint\BachsIntegrations\Bachs\RuntimeConfiguration;
 use Etchpoint\BachsIntegrations\Core\Money\Currency;
 use Etchpoint\BachsIntegrations\Core\Money\Money;
 use Etchpoint\BachsIntegrations\Persistence\IntentRepository;
+use Etchpoint\BachsIntegrations\Core\Refund\VerifiedRefund;
 use FluentFormPro\Payments\PaymentMethods\BaseProcessor;
 use RuntimeException;
 use Throwable;
@@ -53,6 +54,9 @@ final class FluentFormsProcessor extends BaseProcessor {
 	/** Provider checkout metadata key. */
 	private const CHECKOUT_META = '_etchpoint_bachs_checkout_id';
 
+	/** Provider refund metadata key. */
+	private const REFUND_META = '_etchpoint_bachs_refund_id';
+
 	/**
 	 * Register Fluent Forms payment processing hooks once.
 	 *
@@ -77,12 +81,12 @@ final class FluentFormsProcessor extends BaseProcessor {
 	/**
 	 * Create a pending Fluent transaction and redirect to hosted Bachs checkout.
 	 *
-	 * @param int                  $submission_id   Fluent Forms submission identifier.
-	 * @param array<string, mixed> $submission_data Submitted form data.
-	 * @param object               $form            Fluent Forms form object.
-	 * @param array<string, mixed> $method_settings Selected payment method settings.
+	 * @param int                  $submission_id    Fluent Forms submission identifier.
+	 * @param array<string, mixed> $submission_data  Submitted form data.
+	 * @param object               $form             Fluent Forms form object.
+	 * @param array<string, mixed> $method_settings  Selected payment method settings.
 	 * @param bool                 $has_subscription Whether the submission contains subscriptions.
-	 * @param int                  $total_payable   Trusted Fluent Forms total in minor units.
+	 * @param int                  $total_payable    Trusted Fluent Forms total in minor units.
 	 * @return void
 	 *
 	 * @throws RuntimeException When checkout initialization cannot proceed.
@@ -278,6 +282,64 @@ final class FluentFormsProcessor extends BaseProcessor {
 		$this->recalculatePaidTotal();
 		$this->completePaymentSubmission( false );
 		$this->setMetaData( self::FULFILLED_META, $charge_id );
+
+		return true;
+	}
+
+	/**
+	 * Apply one provider-confirmed refund through Fluent Forms' refund API.
+	 *
+	 * @param int            $submission_id Fluent Forms submission identifier.
+	 * @param VerifiedRefund $refund        Verified refund evidence.
+	 * @return bool True when newly applied, false when already applied identically.
+	 *
+	 * @throws RuntimeException When the stored Fluent Forms transaction does not match.
+	 */
+	public function fulfill_verified_refund( int $submission_id, VerifiedRefund $refund ): bool {
+		$this->setSubmissionId( $submission_id );
+		$transaction = $this->getLastTransaction( $submission_id );
+		$submission  = $this->getSubmission();
+
+		if ( ! is_object( $transaction ) || ! is_object( $submission ) ) {
+			throw new RuntimeException( 'Fluent Forms refund target could not be found.' );
+		}
+
+		$method          = isset( $transaction->payment_method ) ? (string) $transaction->payment_method : '';
+		$existing_charge = isset( $transaction->charge_id ) ? (string) $transaction->charge_id : '';
+
+		if ( 'bachs' !== $method || '' === $existing_charge || ! hash_equals( $existing_charge, $refund->charge_id() ) ) {
+			throw new RuntimeException( 'Fluent Forms transaction does not match the Bachs refund.' );
+		}
+
+		$existing_refund = $this->getMetaData( self::REFUND_META );
+
+		if ( is_string( $existing_refund ) && '' !== $existing_refund ) {
+			if ( ! hash_equals( $existing_refund, $refund->provider_refund_id() ) ) {
+				throw new RuntimeException( 'Fluent Forms already contains a different Bachs refund marker.' );
+			}
+
+			return false;
+		}
+
+		$minor_amount = FluentFormsAmount::to_minor_units(
+			$refund->refunded_amount()->amount(),
+			$refund->refunded_amount()->currency()
+		);
+		$note         = sprintf(
+			/* translators: %s: Bachs refund identifier. */
+			__( 'Refund confirmed by Bachs webhook (%s).', 'payment-integrations-for-bachs' ),
+			$refund->provider_refund_id()
+		);
+
+		$this->refund(
+			$minor_amount,
+			$transaction,
+			$submission,
+			'bachs',
+			$refund->provider_refund_id(),
+			$note
+		);
+		$this->setMetaData( self::REFUND_META, $refund->provider_refund_id() );
 
 		return true;
 	}
