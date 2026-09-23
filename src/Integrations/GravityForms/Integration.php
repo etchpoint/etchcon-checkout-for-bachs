@@ -36,10 +36,6 @@ final class Integration {
 			return;
 		}
 
-		if ( ! method_exists( GFForms::class, 'include_payment_addon_framework' ) ) {
-			return;
-		}
-
 		GFForms::include_payment_addon_framework();
 
 		if ( ! class_exists( 'GFPaymentAddOn' ) || ! class_exists( GFAddOn::class ) ) {

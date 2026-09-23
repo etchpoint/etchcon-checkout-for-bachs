@@ -105,7 +105,7 @@ final class GravityFormsFulfillmentHandler implements PaymentFulfillmentHandler 
 		$entry_id = (int) $payment->local_object_id();
 		$entry    = GFAPI::get_entry( $entry_id );
 
-		if ( $entry instanceof WP_Error || ! is_array( $entry ) || (int) ( $entry['id'] ?? 0 ) !== $entry_id ) {
+		if ( $entry instanceof WP_Error || (int) ( $entry['id'] ?? 0 ) !== $entry_id ) {
 			return $this->requires_review( $intent_id, $event_id, 'gravity_forms_entry_missing', 'Gravity Forms entry could not be found.' );
 		}
 
@@ -146,7 +146,6 @@ final class GravityFormsFulfillmentHandler implements PaymentFulfillmentHandler 
 
 			if (
 				$refreshed instanceof WP_Error
-				|| ! is_array( $refreshed )
 				|| 'Paid' !== ( $refreshed['payment_status'] ?? null )
 				|| $payment->charge_id() !== ( $refreshed['transaction_id'] ?? null )
 			) {
