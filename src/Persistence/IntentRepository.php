@@ -96,6 +96,8 @@ final class IntentRepository implements IntentStore, CheckoutIntentStore, Reconc
 	 * @param string $local_object_type Host object type.
 	 * @param string $local_object_id   Host object identifier.
 	 * @return IntentRecord|null
+	 *
+	 * @throws RuntimeException When the intent lookup fails.
 	 */
 	public function find_latest_for_local_object(
 		string $integration,

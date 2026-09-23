@@ -84,7 +84,7 @@ final class Migrator {
 				'created_at',
 				'updated_at',
 			),
-			Schema::events_table( $wpdb->prefix ) => array(
+			Schema::events_table( $wpdb->prefix )  => array(
 				'id',
 				'provider_event_id',
 				'event_type',
