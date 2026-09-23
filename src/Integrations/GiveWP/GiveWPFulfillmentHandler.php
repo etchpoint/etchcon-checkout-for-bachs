@@ -30,10 +30,18 @@ final class GiveWPFulfillmentHandler implements PaymentFulfillmentHandler {
 	/** GiveWP integration identifier. */
 	private const INTEGRATION = 'givewp';
 
-	/** @var IntentRepository Payment intent repository. */
+	/**
+	 * Payment intent repository.
+	 *
+	 * @var IntentRepository
+	 */
 	private IntentRepository $intents;
 
-	/** @var EventRepository Event inbox repository. */
+	/**
+	 * Event inbox repository.
+	 *
+	 * @var EventRepository
+	 */
 	private EventRepository $events;
 
 	/**
