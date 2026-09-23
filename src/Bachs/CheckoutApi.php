@@ -81,7 +81,7 @@ final class CheckoutApi implements CheckoutProvider {
 
 		self::assert_metadata_size( $metadata );
 
-		$body = array(
+		$body    = array(
 			'pricing'     => array(
 				'currency' => $intent->expected_amount()->currency()->code(),
 				'amount'   => $intent->expected_amount()->amount(),
