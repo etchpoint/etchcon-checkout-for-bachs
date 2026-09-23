@@ -374,7 +374,7 @@ final class IntentRepository implements IntentStore, CheckoutIntentStore, Reconc
 		);
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
-		$rows = $this->wpdb->get_results( $sql, ARRAY_A );
+		$rows    = $this->wpdb->get_results( $sql, ARRAY_A );
 		$records = array();
 
 		if ( ! is_array( $rows ) ) {

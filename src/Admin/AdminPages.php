@@ -155,7 +155,10 @@ final class AdminPages {
 		check_admin_referer( self::RECONCILE_ACTION . '_' . $intent_id );
 		$result = ReconciliationRuntime::reconcile_now( $intent_id );
 		$url    = add_query_arg(
-			array( 'bachs_reconcile' => $result->disposition()->value ),
+			array(
+				'bachs_reconcile'       => $result->disposition()->value,
+				'bachs_reconcile_nonce' => wp_create_nonce( 'etchpoint_bachs_reconciliation_notice' ),
+			),
 			admin_url( 'admin.php?page=' . self::RECONCILIATION_SLUG )
 		);
 
@@ -225,7 +228,13 @@ final class AdminPages {
 	 * @return string|null
 	 */
 	private static function reconciliation_notice_code(): ?string {
-		if ( ! isset( $_GET['bachs_reconcile'] ) ) {
+		if ( ! isset( $_GET['bachs_reconcile'], $_GET['bachs_reconcile_nonce'] ) ) {
+			return null;
+		}
+
+		$nonce = sanitize_text_field( wp_unslash( $_GET['bachs_reconcile_nonce'] ) );
+
+		if ( ! wp_verify_nonce( $nonce, 'etchpoint_bachs_reconciliation_notice' ) ) {
 			return null;
 		}
 
