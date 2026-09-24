@@ -1,7 +1,6 @@
 === Payment Integrations for Bachs ===
 Tags: payments, woocommerce, memberships, forms, donations
 Requires at least: 6.8
-Tested up to: 7.1
 Requires PHP: 8.1
 Stable tag: 1.0.0
 License: GPL-2.0-or-later
@@ -74,11 +73,13 @@ A refund is not treated as complete merely because the API accepted the request.
 
 Bachs Payments > Reconciliation can safely re-check provider state and retry incomplete WordPress fulfillment.
 
+The plugin also schedules an hourly WordPress cron task that checks up to 20 eligible payment records per run. With Bachs configured, these background checks can contact the Bachs API to verify transaction status and retry incomplete local fulfillment without an administrator opening the dashboard. Actual execution depends on the site's WordPress cron setup. The scheduled task is removed when the plugin is deactivated or uninstalled.
+
 Bachs Payments > Diagnostics provides read-only configuration and integration checks. Secret values and full provider responses are not displayed.
 
 == External Service ==
 
-This plugin requires Bachs, a third-party payment service provided by Bachs Technologies Limited. The plugin contacts Bachs only when a configured administrator or customer uses functionality that requires the payment service, such as creating or retrieving checkout sessions, verifying payments, requesting refunds, or receiving Bachs webhooks.
+This plugin requires Bachs, a third-party payment service provided by Bachs Technologies Limited. Once configured, the plugin contacts Bachs to create or retrieve checkout sessions, verify payments, request refunds, and reconcile eligible payment records. Requests can be triggered by customer checkout, administrator actions, automatic background reconciliation, or processing incoming Bachs webhooks. Background reconciliation does not require an administrator or customer to be actively using the site at the time of the request.
 
 Bachs service: https://bachs.io/
 

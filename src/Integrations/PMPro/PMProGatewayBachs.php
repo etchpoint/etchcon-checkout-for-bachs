@@ -54,7 +54,7 @@ final class PMProGateway_Bachs extends PMProGateway {
 	/**
 	 * Process the Paid Memberships Pro order through Bachs hosted checkout.
 	 *
-	 * @param MemberOrder $order Paid Memberships Pro order.
+	 * @param mixed $order Candidate order supplied by PMPro; validated before use.
 	 * @return bool
 	 */
 	public function process( &$order ) {
