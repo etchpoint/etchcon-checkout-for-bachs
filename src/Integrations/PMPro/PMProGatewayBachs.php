@@ -59,10 +59,6 @@ final class PMProGateway_Bachs extends PMProGateway {
 	 * @return bool
 	 */
 	public function process( &$order ) {
-		if ( ! $order instanceof MemberOrder ) {
-			return false;
-		}
-
 		return PMProGatewayRuntime::process( $order );
 	}
 }
