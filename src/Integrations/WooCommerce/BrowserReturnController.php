@@ -296,7 +296,7 @@ final class BrowserReturnController {
 	 * provider checkout has already been submitted and is awaiting authoritative
 	 * confirmation.
 	 *
-	 * @param array<string, array<string, mixed>> $actions Existing WooCommerce order actions.
+	 * @param array<string, array<string, mixed>>  $actions Existing WooCommerce order actions.
 	 * @param WC_Order                           $order   WooCommerce order.
 	 * @return array<string, array<string, mixed>>
 	 */
@@ -345,6 +345,7 @@ final class BrowserReturnController {
 			}
 		} catch ( Throwable ) {
 			// Browser-return recovery is best effort; the signed webhook remains authoritative.
+			return;
 		}
 	}
 
