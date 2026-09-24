@@ -13,6 +13,8 @@ cp "${ROOT_DIR}/payment-integrations-for-bachs.php" "${PLUGIN_DIR}/"
 cp "${ROOT_DIR}/uninstall.php" "${PLUGIN_DIR}/"
 cp "${ROOT_DIR}/readme.txt" "${PLUGIN_DIR}/"
 cp "${ROOT_DIR}/LICENSE" "${PLUGIN_DIR}/"
+# Keep the Composer manifest with its generated production autoloader for review.
+cp "${ROOT_DIR}/composer.json" "${PLUGIN_DIR}/"
 cp -R "${ROOT_DIR}/assets" "${PLUGIN_DIR}/assets"
 cp -R "${ROOT_DIR}/src" "${PLUGIN_DIR}/src"
 cp -R "${ROOT_DIR}/vendor" "${PLUGIN_DIR}/vendor"

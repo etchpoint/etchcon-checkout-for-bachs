@@ -108,7 +108,8 @@ final class Migrator {
 
 		foreach ( $requirements as $table => $required_columns ) {
 			$sql = (string) $wpdb->prepare( 'SHOW COLUMNS FROM %i', $table );
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is prepared with wpdb::prepare() immediately above.
+			// Inspect the current custom-table schema directly; cached columns could hide an incomplete migration.
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared immediately above; schema verification requires a fresh database read.
 			$columns = $wpdb->get_col( $sql );
 
 			if ( '' !== trim( (string) $wpdb->last_error ) || ! is_array( $columns ) ) {

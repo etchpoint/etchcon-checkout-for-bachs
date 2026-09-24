@@ -12,6 +12,7 @@ use Etchpoint\BachsIntegrations\Integrations\PMPro\PMProGatewayRuntime;
 /**
  * Exposes Bachs through Paid Memberships Pro's supported gateway class API.
  */
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- PMPro resolves gateways using the global PMProGateway_{gateway} class naming convention.
 final class PMProGateway_Bachs extends PMProGateway {
 	/**
 	 * Create the PMPro Bachs gateway object.
@@ -57,6 +58,10 @@ final class PMProGateway_Bachs extends PMProGateway {
 	 * @return bool
 	 */
 	public function process( &$order ) {
+		if ( ! $order instanceof MemberOrder ) {
+			return false;
+		}
+
 		return PMProGatewayRuntime::process( $order );
 	}
 }

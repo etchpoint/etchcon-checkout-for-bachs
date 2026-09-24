@@ -71,6 +71,7 @@ final class PMProGatewayRuntime {
 			$membership_id = (int) $order->membership_id;
 			$success_url   = pmpro_url( 'confirmation', '?pmpro_level=' . $membership_id );
 			$success_url   = (string) apply_filters(
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Reuse PMPro's existing confirmation URL filter for compatibility with its integrations.
 				'pmpro_confirmation_url',
 				$success_url,
 				(int) $order->user_id,
