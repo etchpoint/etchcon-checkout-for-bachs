@@ -80,6 +80,21 @@ final class FluentFormsProcessor extends BaseProcessor {
 
 	// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
 	/**
+	 * Return the Fluent Forms payment mode for the active Bachs environment.
+	 *
+	 * Fluent Forms calls this while building the initial pending transaction.
+	 *
+	 * @return string Fluent Forms payment mode.
+	 */
+	public function getPaymentMode() {
+		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+		$configuration = RuntimeConfiguration::from_wordpress();
+
+		return 'live' === $configuration->environment()->value ? 'live' : 'test';
+	}
+
+	// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Fluent Forms API method.
+	/**
 	 * Create a pending Fluent transaction and redirect to hosted Bachs checkout.
 	 *
 	 * @param int                  $submission_id    Fluent Forms submission identifier.
