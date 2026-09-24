@@ -49,17 +49,17 @@ final class ProviderModelsTest extends TestCase {
 	public function test_provider_payment_preserves_exact_evidence(): void {
 		$payment = ProviderPayment::from_api_response(
 			array(
-				'payment_id'       => 'pay_123',
-				'status'           => 'succeeded',
-				'amount'           => '75000.00',
-				'amount_paid'      => '75000.00',
+				'payment_id'          => 'pay_123',
+				'status'              => 'succeeded',
+				'amount'              => '75000.00',
+				'amount_paid'         => '75000.00',
 				'amount_remaining'    => '0.00',
 				'settlement_amount'   => '48.25',
 				'settlement_currency' => 'USD',
 				'currency'            => 'NGN',
 				'is_refundable'       => true,
-				'reference'        => 'ref_123',
-				'checkout_id'      => 'chk_123',
+				'reference'           => 'ref_123',
+				'checkout_id'         => 'chk_123',
 			)
 		);
 
