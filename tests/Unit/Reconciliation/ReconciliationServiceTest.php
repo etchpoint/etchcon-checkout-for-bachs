@@ -84,6 +84,38 @@ final class ReconciliationServiceTest extends TestCase {
 	}
 
 	/**
+	 * Customer payment currency may differ from the merchant checkout currency.
+	 *
+	 * @return void
+	 */
+	public function test_adaptive_pricing_payment_recovers_against_checkout_amount(): void {
+		$payment = ProviderPayment::from_api_response(
+			array(
+				'payment_id'  => 'pay_123',
+				'status'      => 'succeeded',
+				'amount'      => '65000.00',
+				'currency'    => 'NGN',
+				'reference'   => 'ref_1847',
+				'checkout_id' => 'checkout_123',
+			)
+		);
+		$service = new ReconciliationService(
+			new InMemoryReconciliationIntentStore( array( self::intent_record() ) ),
+			new InMemoryEventStore(),
+			new FakeCheckoutProvider( self::checkout( 'succeeded', 'pay_123' ) ),
+			new FakePaymentRetriever( $payment ),
+			new FulfillmentRegistry(
+				array( new FakeFulfillmentHandler( 'woocommerce', FulfillmentDisposition::APPLIED ) )
+			),
+			Environment::SANDBOX
+		);
+
+		$result = $service->reconcile( 7 );
+
+		self::assertSame( ReconciliationDisposition::RECOVERED, $result->disposition() );
+	}
+
+	/**
 	 * A checkout that is not authoritatively successful must not be fulfilled.
 	 *
 	 * @return void

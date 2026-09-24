@@ -690,7 +690,7 @@ final class WebhookProcessor {
 		}
 
 		try {
-			$money = Money::from_decimal(
+			Money::from_decimal(
 				$payment->amount(),
 				Currency::from_code( $payment->currency() )
 			);
@@ -701,15 +701,14 @@ final class WebhookProcessor {
 			);
 		}
 
-		if ( ! $intent->intent()->expected_amount()->equals( $money ) ) {
-			return array(
-				'money' => null,
-				'code'  => 'provider_amount_mismatch',
-			);
-		}
-
+		/*
+		 * The signed collection event has already matched the immutable merchant
+		 * amount and currency. Bachs may collect in a different customer payment
+		 * currency through adaptive pricing, so the payment amount is validated
+		 * for shape but is not compared directly with the store amount.
+		 */
 		return array(
-			'money' => $money,
+			'money' => $intent->intent()->expected_amount(),
 			'code'  => null,
 		);
 	}

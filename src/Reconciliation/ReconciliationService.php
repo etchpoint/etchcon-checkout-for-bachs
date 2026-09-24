@@ -296,7 +296,7 @@ final class ReconciliationService {
 		}
 
 		try {
-			$money = Money::from_decimal( $payment->amount(), Currency::from_code( $payment->currency() ) );
+			Money::from_decimal( $payment->amount(), Currency::from_code( $payment->currency() ) );
 		} catch ( InvalidArgumentException ) {
 			return array(
 				'money' => null,
@@ -304,15 +304,14 @@ final class ReconciliationService {
 			);
 		}
 
-		if ( ! $record->intent()->expected_amount()->equals( $money ) ) {
-			return array(
-				'money' => null,
-				'code'  => 'provider_amount_mismatch',
-			);
-		}
-
+		/*
+		 * The checkout session above already proves the immutable merchant amount
+		 * and currency. Bachs may collect the customer in a different payment
+		 * currency through adaptive pricing, so the payment object's amount is
+		 * validated for shape but is not required to equal the store amount.
+		 */
 		return array(
-			'money' => $money,
+			'money' => $record->intent()->expected_amount(),
 			'code'  => null,
 		);
 	}

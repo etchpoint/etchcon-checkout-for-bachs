@@ -111,37 +111,33 @@ final class WebhookProcessorTest extends TestCase {
 	}
 
 	/**
-	 * Provider amount mismatch is held for review and never creates payment evidence.
+	 * Provider payment currency may differ after adaptive pricing.
 	 *
 	 * @return void
 	 */
-	public function test_provider_amount_mismatch_requires_review(): void {
+	public function test_provider_payment_can_use_different_customer_currency(): void {
 		$payment = ProviderPayment::from_api_response(
 			array(
 				'payment_id'       => 'ch_123',
 				'status'           => 'succeeded',
-				'amount'           => '99.00',
-				'currency'         => 'USD',
-				'amount_paid'      => '99.00',
+				'amount'           => '65000.00',
+				'currency'         => 'NGN',
+				'amount_paid'      => '65000.00',
 				'amount_remaining' => '0.00',
 				'reference'        => 'ref_123',
 				'checkout_id'      => 'chk_123',
 			)
 		);
-		$events  = new InMemoryEventStore();
 		$body    = $this->event_body( 'collection.succeeded' );
 		$result  = $this->processor(
-			$events,
+			new InMemoryEventStore(),
 			new InMemoryIntentStore( array( $this->intent_record() ) ),
 			new FakePaymentRetriever( $payment )
 		)->process( $this->signature_for( $body ), $body );
 
-		self::assertSame( WebhookProcessingDisposition::REQUIRES_REVIEW, $result->disposition() );
-		self::assertNull( $result->verified_payment() );
-		self::assertSame(
-			EventProcessingStatus::REQUIRES_REVIEW,
-			$events->find_by_provider_event_id( 'evt_123' )?->processing_status()
-		);
+		self::assertSame( WebhookProcessingDisposition::READY_FOR_FULFILLMENT, $result->disposition() );
+		self::assertSame( '42.00', $result->verified_payment()?->amount()->amount() );
+		self::assertSame( 'USD', $result->verified_payment()?->amount()->currency()->code() );
 	}
 
 	/**
