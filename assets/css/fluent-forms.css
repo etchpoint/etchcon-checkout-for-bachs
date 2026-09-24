@@ -1,0 +1,30 @@
+.ff-btn-submit.etchpoint-bachs-redirecting {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.55em;
+	cursor: wait;
+}
+
+.ff-btn-submit.etchpoint-bachs-redirecting .etchpoint-bachs-spinner {
+	box-sizing: border-box;
+	width: 1em;
+	height: 1em;
+	flex: 0 0 1em;
+	border: 0.14em solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: etchpoint-bachs-spin 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ff-btn-submit.etchpoint-bachs-redirecting .etchpoint-bachs-spinner {
+		animation-duration: 1.4s;
+	}
+}
+
+@keyframes etchpoint-bachs-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

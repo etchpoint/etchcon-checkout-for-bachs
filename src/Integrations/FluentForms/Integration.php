@@ -42,7 +42,32 @@ final class Integration {
 
 			$payment_method->init();
 			$processor->init();
+			add_action( 'wp_enqueue_scripts', array( self::class, 'enqueue_assets' ) );
 			return;
 		}
+	}
+
+	/**
+	 * Enqueue the lightweight Fluent Forms hosted-checkout UI.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_assets(): void {
+		$plugin_file = dirname( __DIR__, 3 ) . '/payment-integrations-for-bachs.php';
+
+		wp_enqueue_style(
+			'etchpoint-bachs-fluent-forms',
+			plugins_url( 'assets/css/fluent-forms.css', $plugin_file ),
+			array(),
+			'1.0.0'
+		);
+
+		wp_enqueue_script(
+			'etchpoint-bachs-fluent-forms',
+			plugins_url( 'assets/js/fluent-forms.js', $plugin_file ),
+			array( 'jquery' ),
+			'1.0.0',
+			true
+		);
 	}
 }

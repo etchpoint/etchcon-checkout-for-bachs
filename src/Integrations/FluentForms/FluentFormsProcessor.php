@@ -203,11 +203,13 @@ final class FluentFormsProcessor extends BaseProcessor {
 
 			wp_send_json_success(
 				array(
-					'nextAction'   => 'payment',
-					'actionName'   => 'normalRedirect',
-					'redirect_url' => $result->redirect_url(),
-					'message'      => __( 'Redirecting to Bachs checkout.', 'payment-integrations-for-bachs' ),
-					'result'       => array( 'insert_id' => $submission_id ),
+					'nextAction'           => 'payment',
+					'actionName'           => 'normalRedirect',
+					'redirect_url'         => $result->redirect_url(),
+					'payment_method'       => $this->method,
+					'bachs_redirect_label' => __( 'Redirecting to Bachs checkout...', 'payment-integrations-for-bachs' ),
+					'message'              => '',
+					'result'               => array( 'insert_id' => $submission_id ),
 				),
 				200
 			);
