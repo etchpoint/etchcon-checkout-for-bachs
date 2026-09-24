@@ -34,7 +34,7 @@ Recurring payments and subscriptions are not included in version 1.0.0.
 3. Open Bachs Payments > Settings and choose Sandbox or Live.
 4. Enter the matching Bachs secret API key and webhook signing secret, then save.
 5. Copy the webhook endpoint shown on the settings screen into your Bachs webhook configuration.
-6. Subscribe the endpoint to `collection.succeeded`, `collection.failed`, `collection.underpaid`, `checkout.expired`, `refund.paid`, and `refund.failed`.
+6. Subscribe the endpoint to `collection.succeeded`, `collection.failed`, `collection.underpaid`, `checkout.expired`, `refund.created`, `refund.paid`, and `refund.failed`.
 7. Enable Bachs in the supported WordPress integration you want to use.
 8. Use sandbox mode first and confirm checkout, webhook completion, and reconciliation before switching to live mode.
 
@@ -66,7 +66,7 @@ Live payments require HTTPS.
 
 Administrators can request Bachs refunds from Bachs Payments > Refunds.
 
-Full and partial refunds are supported. Bachs currently permits one refund operation per charge, so a partial refund consumes the refund operation for that charge.
+Full refunds are supported. Partial refunds are supported when the Bachs settlement currency matches the original WordPress transaction currency. If Bachs settled the charge in a different currency, use a full refund so the plugin does not guess an exchange rate. Bachs currently permits one refund operation per charge, so a partial refund consumes the refund operation for that charge.
 
 A refund is not treated as complete merely because the API accepted the request. The plugin waits for signed provider evidence confirming the refund before applying the corresponding local refund state.
 
@@ -98,7 +98,7 @@ A Bachs merchant account and applicable Bachs service access are required to pro
 
 == Data sent to Bachs ==
 
-For checkout creation, the plugin sends the transaction currency and amount, success and cancel return URLs, an opaque payment reference, and correlation metadata identifying the WordPress integration and local transaction record.
+For checkout creation, the plugin sends the transaction currency and amount, success and cancel return URLs, an opaque payment reference, correlation metadata identifying the WordPress integration and local transaction record, and customer contact information required for hosted checkout. This includes the customer email address and can include the customer name and phone number when available from the originating integration.
 
 Payment details entered by the customer on hosted checkout are submitted directly to Bachs rather than to this plugin.
 
