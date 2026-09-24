@@ -55,10 +55,16 @@ final class Compatibility {
 		add_action(
 			'admin_notices',
 			static function (): void {
+				$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+				if ( null === $screen || 'plugins' !== $screen->id ) {
+					return;
+				}
+
 				$wordpress_version = (string) get_bloginfo( 'version' );
 
 				if ( ! self::supports_wordpress_version( $wordpress_version ) ) {
-					echo '<div class="notice notice-error"><p>' . esc_html__( 'Payment Integrations for Bachs requires WordPress 6.8 or newer.', 'payment-integrations-for-bachs' ) . '</p></div>';
+					echo '<div class="notice notice-error"><p>' . esc_html__( 'EtchCon Checkout for Bachs requires WordPress 6.8 or newer.', 'etchcon-checkout-for-bachs' ) . '</p></div>';
 				}
 			}
 		);

@@ -16,11 +16,7 @@ use Etchpoint\BachsIntegrations\Bootstrap\Plugin;
  * Exposes the Bachs gateway to WooCommerce Cart and Checkout Blocks.
  */
 final class BlocksPaymentMethod extends AbstractPaymentMethodType {
-	/**
-	 * Payment method name matching the gateway identifier.
-	 *
-	 * @var string
-	 */
+	/** Payment method name matching the gateway identifier. */
 	protected $name = Gateway::ID;
 
 	/**
@@ -45,7 +41,7 @@ final class BlocksPaymentMethod extends AbstractPaymentMethodType {
 	 * @return void
 	 */
 	public function initialize(): void {
-		$settings       = get_option( 'woocommerce_' . $this->name . '_settings', array() );
+		$settings = get_option( 'woocommerce_' . $this->name . '_settings', array() );
 		$this->settings = is_array( $settings ) ? $settings : array();
 	}
 
@@ -92,10 +88,10 @@ final class BlocksPaymentMethod extends AbstractPaymentMethodType {
 	 */
 	public function get_payment_method_data(): array {
 		return array(
-			'title'       => $this->get_setting( 'title', __( 'Bachs', 'payment-integrations-for-bachs' ) ),
+			'title'       => $this->get_setting( 'title', __( 'Bachs', 'etchcon-checkout-for-bachs' ) ),
 			'description' => $this->get_setting(
 				'description',
-				__( 'Pay securely using Bachs.', 'payment-integrations-for-bachs' )
+				__( 'Pay securely using Bachs.', 'etchcon-checkout-for-bachs' )
 			),
 			'supports'    => $this->get_supported_features(),
 		);

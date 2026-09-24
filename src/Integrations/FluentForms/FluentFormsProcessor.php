@@ -116,11 +116,11 @@ final class FluentFormsProcessor extends BaseProcessor {
 		$form_id       = isset( $form->id ) ? (int) $form->id : 0;
 
 		if ( 1 > $submission_id || 1 > $form_id ) {
-			wp_send_json_error( array( 'message' => __( 'Bachs could not identify the Fluent Forms submission or form. Please reload the page and try again.', 'payment-integrations-for-bachs' ) ), 422 );
+			wp_send_json_error( array( 'message' => __( 'Bachs could not identify the Fluent Forms submission or form. Please reload the page and try again.', 'etchcon-checkout-for-bachs' ) ), 422 );
 		}
 
 		if ( true === $has_subscription ) {
-			wp_send_json_error( array( 'message' => __( 'Bachs currently supports one-time Fluent Forms payments only.', 'payment-integrations-for-bachs' ) ), 422 );
+			wp_send_json_error( array( 'message' => __( 'Bachs currently supports one-time Fluent Forms payments only.', 'etchcon-checkout-for-bachs' ) ), 422 );
 		}
 
 		$this->form = $form;
@@ -207,7 +207,7 @@ final class FluentFormsProcessor extends BaseProcessor {
 					'actionName'           => 'normalRedirect',
 					'redirect_url'         => $result->redirect_url(),
 					'payment_method'       => $this->method,
-					'bachs_redirect_label' => __( 'Redirecting to Bachs checkout...', 'payment-integrations-for-bachs' ),
+					'bachs_redirect_label' => __( 'Redirecting to Bachs checkout...', 'etchcon-checkout-for-bachs' ),
 					'message'              => '',
 					'result'               => array( 'insert_id' => $submission_id ),
 				),
@@ -229,7 +229,7 @@ final class FluentFormsProcessor extends BaseProcessor {
 					'code'    => $failure_code,
 					'message' => sprintf(
 						/* translators: %s: Safe checkout support code. */
-						__( 'Bachs checkout could not be started. Please try again. Support code: %s', 'payment-integrations-for-bachs' ),
+						__( 'Bachs checkout could not be started. Please try again. Support code: %s', 'etchcon-checkout-for-bachs' ),
 						$failure_code
 					),
 				),
@@ -332,7 +332,7 @@ final class FluentFormsProcessor extends BaseProcessor {
 			$transaction_id,
 			array(
 				'charge_id'    => $charge_id,
-				'payment_note' => __( 'Payment verified through the signed Bachs webhook.', 'payment-integrations-for-bachs' ),
+				'payment_note' => __( 'Payment verified through the signed Bachs webhook.', 'etchcon-checkout-for-bachs' ),
 			)
 		);
 		$this->changeSubmissionPaymentStatus( 'paid' );
@@ -385,7 +385,7 @@ final class FluentFormsProcessor extends BaseProcessor {
 		);
 		$note         = sprintf(
 			/* translators: %s: Bachs refund identifier. */
-			__( 'Refund confirmed by Bachs webhook (%s).', 'payment-integrations-for-bachs' ),
+			__( 'Refund confirmed by Bachs webhook (%s).', 'etchcon-checkout-for-bachs' ),
 			$refund->provider_refund_id()
 		);
 

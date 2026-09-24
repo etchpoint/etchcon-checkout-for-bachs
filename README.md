@@ -1,6 +1,8 @@
-# Payment Integrations for Bachs
+# EtchCon Checkout for Bachs
 
 Open-source WordPress payment integrations for Bachs, maintained by Etchpoint.
+
+EtchCon Checkout for Bachs is independently developed by Etchpoint and is not affiliated with or endorsed by Bachs Technologies Limited.
 
 ## Current version
 

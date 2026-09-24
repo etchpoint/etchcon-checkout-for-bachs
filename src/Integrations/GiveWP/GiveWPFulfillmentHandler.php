@@ -165,7 +165,7 @@ final class GiveWPFulfillmentHandler implements PaymentFulfillmentHandler {
 			DonationNote::create(
 				array(
 					'donationId' => $donation_id,
-					'content'    => __( 'Payment verified through the signed Bachs webhook.', 'payment-integrations-for-bachs' ),
+					'content'    => __( 'Payment verified through the signed Bachs webhook.', 'etchcon-checkout-for-bachs' ),
 				)
 			);
 		} catch ( Throwable ) {

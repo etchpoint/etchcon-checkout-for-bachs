@@ -123,7 +123,7 @@ final class GravityFormsRefundFulfillmentHandler implements RefundFulfillmentHan
 				'Bachs',
 				sprintf(
 					/* translators: 1: refund amount, 2: currency code, 3: Bachs refund ID. */
-					__( 'Bachs refund confirmed: %1$s %2$s (%3$s).', 'payment-integrations-for-bachs' ),
+					__( 'Bachs refund confirmed: %1$s %2$s (%3$s).', 'etchcon-checkout-for-bachs' ),
 					$refund->refunded_amount()->amount(),
 					$refund->refunded_amount()->currency()->code(),
 					$refund->provider_refund_id()

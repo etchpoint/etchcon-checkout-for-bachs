@@ -57,7 +57,7 @@ final class GravityFormsAddOn extends GFPaymentAddOn {
 	 *
 	 * @var string
 	 */
-	protected $_path = 'payment-integrations-for-bachs/payment-integrations-for-bachs.php';
+	protected $_path = 'etchcon-checkout-for-bachs/etchcon-checkout-for-bachs.php';
 
 	/**
 	 * Physical add-on class path.
@@ -208,7 +208,7 @@ final class GravityFormsAddOn extends GFPaymentAddOn {
 			'transaction_id'   => $transaction_id,
 			'entry_id'         => $entry_id,
 			'payment_status'   => 'Paid',
-			'note'             => __( 'Payment completed through Bachs.', 'payment-integrations-for-bachs' ),
+			'note'             => __( 'Payment completed through Bachs.', 'etchcon-checkout-for-bachs' ),
 		);
 
 		$this->complete_payment( $entry, $action );
@@ -235,7 +235,7 @@ final class GravityFormsAddOn extends GFPaymentAddOn {
 
 				$field['choices'] = array(
 					array(
-						'label' => __( 'Products and Services', 'payment-integrations-for-bachs' ),
+						'label' => __( 'Products and Services', 'etchcon-checkout-for-bachs' ),
 						'value' => 'product',
 					),
 				);

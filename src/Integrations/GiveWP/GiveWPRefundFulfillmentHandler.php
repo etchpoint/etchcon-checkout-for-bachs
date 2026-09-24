@@ -106,7 +106,7 @@ final class GiveWPRefundFulfillmentHandler implements RefundFulfillmentHandler {
 					'donationId' => (int) $donation->id,
 					'content'    => sprintf(
 						/* translators: 1: refund amount, 2: currency, 3: provider refund identifier. */
-						__( 'Bachs refund confirmed: %1$s %2$s (%3$s).', 'payment-integrations-for-bachs' ),
+						__( 'Bachs refund confirmed: %1$s %2$s (%3$s).', 'etchcon-checkout-for-bachs' ),
 						$refund->refunded_amount()->amount(),
 						$refund->refunded_amount()->currency()->code(),
 						$refund->provider_refund_id()

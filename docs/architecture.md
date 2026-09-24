@@ -1,8 +1,8 @@
 # Architecture
 
-## Payment Integrations for Bachs
+## EtchCon Checkout for Bachs
 
-Payment Integrations for Bachs is an open-source WordPress plugin maintained by **Etchpoint**. It provides Bachs payment support for multiple WordPress commerce, membership, form, and donation systems through one shared payment core and isolated host integrations.
+EtchCon Checkout for Bachs is an open-source WordPress plugin maintained by **Etchpoint**. It provides Bachs payment support for multiple WordPress commerce, membership, form, and donation systems through one shared payment core and isolated host integrations.
 
 Initial integrations:
 
@@ -91,8 +91,8 @@ etchpoint_bachs_
 The repository is organized approximately as follows:
 
 ```text
-payment-integrations-for-bachs/
-├── payment-integrations-for-bachs.php
+etchcon-checkout-for-bachs/
+├── etchcon-checkout-for-bachs.php
 ├── uninstall.php
 ├── readme.txt
 ├── README.md

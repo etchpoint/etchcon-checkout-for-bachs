@@ -79,8 +79,8 @@ final class BrowserReturnController {
 
 		if ( ! $order instanceof WC_Order || '' === $key || ! hash_equals( $order->get_order_key(), $key ) ) {
 			wp_die(
-				esc_html__( 'This payment return link is invalid or has expired.', 'payment-integrations-for-bachs' ),
-				esc_html__( 'Payment return unavailable', 'payment-integrations-for-bachs' ),
+				esc_html__( 'This payment return link is invalid or has expired.', 'etchcon-checkout-for-bachs' ),
+				esc_html__( 'Payment return unavailable', 'etchcon-checkout-for-bachs' ),
 				array( 'response' => 400 )
 			);
 		}
@@ -155,7 +155,7 @@ final class BrowserReturnController {
 			return $text;
 		}
 
-		return esc_html__( 'Payment submitted. We are confirming it with Bachs.', 'payment-integrations-for-bachs' );
+		return esc_html__( 'Payment submitted. We are confirming it with Bachs.', 'etchcon-checkout-for-bachs' );
 	}
 
 	/**
@@ -176,115 +176,46 @@ final class BrowserReturnController {
 
 		$storage_key = 'etchpoint_bachs_confirm_' . $order_id;
 		$nonce       = wp_create_nonce( self::STATUS_NONCE_ACTION );
+		$plugin_file = dirname( __DIR__, 3 ) . '/etchcon-checkout-for-bachs.php';
+		$script_handle = 'etchpoint-bachs-woocommerce-return';
+
+		wp_enqueue_script(
+			$script_handle,
+			plugins_url( 'assets/js/woocommerce-return.js', $plugin_file ),
+			array(),
+			'1.0.0',
+			true
+		);
+
+		$script_data = array(
+			'storageKey'       => $storage_key,
+			'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
+			'action'           => self::STATUS_ACTION,
+			'orderId'          => $order_id,
+			'orderKey'         => $order->get_order_key(),
+			'nonce'            => $nonce,
+			'maxAttempts'      => self::MAX_STATUS_ATTEMPTS,
+			'delay'            => self::STATUS_DELAY_MS,
+			'messageElementId' => 'etchpoint-bachs-confirmation-message',
+			'messages'         => array(
+				'timeout' => __( 'Confirmation is taking longer than usual. You can safely leave this page. Your order will update when Bachs confirms the payment.', 'etchcon-checkout-for-bachs' ),
+				'paid'    => __( 'Payment confirmed. Loading your order confirmation…', 'etchcon-checkout-for-bachs' ),
+				'failed'  => __( 'Bachs could not confirm this payment. Please contact the store if you believe you were charged.', 'etchcon-checkout-for-bachs' ),
+			),
+		);
+
+		wp_add_inline_script(
+			$script_handle,
+			'window.EtchpointBachsWooReturn = ' . wp_json_encode( $script_data ) . ';',
+			'before'
+		);
 		?>
 		<section class="woocommerce-order bachs-payment-confirmation" aria-live="polite">
-			<h2><?php echo esc_html__( 'Confirming your payment', 'payment-integrations-for-bachs' ); ?></h2>
+			<h2><?php echo esc_html__( 'Confirming your payment', 'etchcon-checkout-for-bachs' ); ?></h2>
 			<p id="etchpoint-bachs-confirmation-message">
-				<?php echo esc_html__( 'Bachs has returned you to the store. We are waiting for the secure payment confirmation. This page updates automatically, so you do not need to refresh it.', 'payment-integrations-for-bachs' ); ?>
+				<?php echo esc_html__( 'Bachs has returned you to the store. We are waiting for the secure payment confirmation. This page updates automatically, so you do not need to refresh it.', 'etchcon-checkout-for-bachs' ); ?>
 			</p>
 		</section>
-		<script>
-		(function () {
-			'use strict';
-
-			var storageKey = '<?php echo esc_js( $storage_key ); ?>';
-			var ajaxUrl = '<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>';
-			var orderId = <?php echo absint( $order_id ); ?>;
-			var orderKey = '<?php echo esc_js( $order->get_order_key() ); ?>';
-			var nonce = '<?php echo esc_js( $nonce ); ?>';
-			var maxAttempts = <?php echo absint( self::MAX_STATUS_ATTEMPTS ); ?>;
-			var delay = <?php echo absint( self::STATUS_DELAY_MS ); ?>;
-			var attempts = 0;
-			var message = document.getElementById('etchpoint-bachs-confirmation-message');
-
-			try {
-				attempts = parseInt(window.sessionStorage.getItem(storageKey) || '0', 10);
-			} catch (error) {
-				attempts = 0;
-			}
-
-			function setAttempts(value) {
-				attempts = value;
-				try {
-					window.sessionStorage.setItem(storageKey, String(value));
-				} catch (error) {
-					// Session storage is optional.
-				}
-			}
-
-			function stopWaiting() {
-				if (message) {
-					message.textContent = '<?php echo esc_js( __( 'Confirmation is taking longer than usual. You can safely leave this page. Your order will update when Bachs confirms the payment.', 'payment-integrations-for-bachs' ) ); ?>';
-				}
-			}
-
-			function scheduleNext() {
-				if (attempts >= maxAttempts) {
-					stopWaiting();
-					return;
-				}
-
-				window.setTimeout(checkStatus, delay);
-			}
-
-			function checkStatus() {
-				var body = new URLSearchParams();
-				body.set('action', '<?php echo esc_js( self::STATUS_ACTION ); ?>');
-				body.set('order_id', String(orderId));
-				body.set('order_key', orderKey);
-				body.set('nonce', nonce);
-
-				setAttempts(attempts + 1);
-
-				window.fetch(ajaxUrl, {
-					method: 'POST',
-					credentials: 'same-origin',
-					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-					body: body.toString()
-				}).then(function (response) {
-					return response.json();
-				}).then(function (payload) {
-					if (!payload || !payload.success || !payload.data) {
-						scheduleNext();
-						return;
-					}
-
-					if ('paid' === payload.data.state && payload.data.redirect) {
-						try {
-							window.sessionStorage.removeItem(storageKey);
-						} catch (error) {
-							// Session storage is optional.
-						}
-
-						if (message) {
-							message.textContent = '<?php echo esc_js( __( 'Payment confirmed. Loading your order confirmation…', 'payment-integrations-for-bachs' ) ); ?>';
-						}
-
-						window.location.replace(payload.data.redirect);
-						return;
-					}
-
-					if ('failed' === payload.data.state) {
-						if (message) {
-							message.textContent = '<?php echo esc_js( __( 'Bachs could not confirm this payment. Please contact the store if you believe you were charged.', 'payment-integrations-for-bachs' ) ); ?>';
-						}
-						return;
-					}
-
-					scheduleNext();
-				}).catch(function () {
-					scheduleNext();
-				});
-			}
-
-			if (attempts >= maxAttempts) {
-				stopWaiting();
-				return;
-			}
-
-			checkStatus();
-		}());
-		</script>
 		<?php
 	}
 

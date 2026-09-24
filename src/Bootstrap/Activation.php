@@ -25,8 +25,8 @@ final class Activation {
 
 		if ( ! Compatibility::supports_wordpress_version( $wordpress_version ) ) {
 			wp_die(
-				esc_html__( 'Payment Integrations for Bachs requires WordPress 6.8 or newer.', 'payment-integrations-for-bachs' ),
-				esc_html__( 'Plugin requirements not met', 'payment-integrations-for-bachs' ),
+				esc_html__( 'EtchCon Checkout for Bachs requires WordPress 6.8 or newer.', 'etchcon-checkout-for-bachs' ),
+				esc_html__( 'Plugin requirements not met', 'etchcon-checkout-for-bachs' ),
 				array( 'back_link' => true )
 			);
 		}

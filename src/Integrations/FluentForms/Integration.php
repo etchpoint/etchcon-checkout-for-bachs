@@ -53,7 +53,7 @@ final class Integration {
 	 * @return void
 	 */
 	public static function enqueue_assets(): void {
-		$plugin_file = dirname( __DIR__, 3 ) . '/payment-integrations-for-bachs.php';
+		$plugin_file = dirname( __DIR__, 3 ) . '/etchcon-checkout-for-bachs.php';
 
 		wp_enqueue_style(
 			'etchpoint-bachs-fluent-forms',

@@ -71,15 +71,15 @@ final class FluentFormsPaymentMethod extends BasePaymentMethod {
 		}
 
 		$methods[ self::METHOD ] = array(
-			'title'        => __( 'Bachs', 'payment-integrations-for-bachs' ),
+			'title'        => __( 'Bachs', 'etchcon-checkout-for-bachs' ),
 			'enabled'      => $enabled,
 			'method_value' => self::METHOD,
 			'settings'     => array(
 				'option_label' => array(
 					'type'     => 'text',
 					'template' => 'inputText',
-					'value'    => __( 'Pay with Bachs', 'payment-integrations-for-bachs' ),
-					'label'    => __( 'Method label', 'payment-integrations-for-bachs' ),
+					'value'    => __( 'Pay with Bachs', 'etchcon-checkout-for-bachs' ),
+					'label'    => __( 'Method label', 'etchcon-checkout-for-bachs' ),
 				),
 			),
 		);
@@ -98,13 +98,13 @@ final class FluentFormsPaymentMethod extends BasePaymentMethod {
 	public function getGlobalFields() {
 		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 		return array(
-			'label'  => __( 'Bachs Payment Settings', 'payment-integrations-for-bachs' ),
+			'label'  => __( 'Bachs Payment Settings', 'etchcon-checkout-for-bachs' ),
 			'fields' => array(
 				array(
 					'settings_key'   => 'is_active',
 					'type'           => 'yes-no-checkbox',
-					'label'          => __( 'Status', 'payment-integrations-for-bachs' ),
-					'checkbox_label' => __( 'Enable Bachs for Fluent Forms', 'payment-integrations-for-bachs' ),
+					'label'          => __( 'Status', 'etchcon-checkout-for-bachs' ),
+					'checkbox_label' => __( 'Enable Bachs for Fluent Forms', 'etchcon-checkout-for-bachs' ),
 				),
 			),
 		);

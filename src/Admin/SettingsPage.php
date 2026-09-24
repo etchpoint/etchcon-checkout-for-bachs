@@ -51,15 +51,15 @@ final class SettingsPage {
 		$webhook_url = rest_url( 'etchpoint-bachs/v1/webhook' );
 		?>
 		<div class="wrap">
-			<h1><?php echo esc_html__( 'Bachs Settings', 'payment-integrations-for-bachs' ); ?></h1>
-			<p><?php echo esc_html__( 'Configure the Bachs account used by WooCommerce, Paid Memberships Pro, Gravity Forms, Fluent Forms and GiveWP.', 'payment-integrations-for-bachs' ); ?></p>
+			<h1><?php echo esc_html__( 'Bachs Settings', 'etchcon-checkout-for-bachs' ); ?></h1>
+			<p><?php echo esc_html__( 'Configure the Bachs account used by WooCommerce, Paid Memberships Pro, Gravity Forms, Fluent Forms and GiveWP.', 'etchcon-checkout-for-bachs' ); ?></p>
 
 			<?php if ( null !== $notice ) : ?>
 				<div class="notice <?php echo esc_attr( $notice['class'] ); ?> inline"><p><?php echo esc_html( $notice['message'] ); ?></p></div>
 			<?php endif; ?>
 
 			<?php if ( self::has_constant_overrides() ) : ?>
-				<div class="notice notice-info inline"><p><?php echo esc_html__( 'One or more Bachs wp-config.php constants are defined. Constant values take precedence over the matching fields saved here.', 'payment-integrations-for-bachs' ); ?></p></div>
+				<div class="notice notice-info inline"><p><?php echo esc_html__( 'One or more Bachs wp-config.php constants are defined. Constant values take precedence over the matching fields saved here.', 'etchcon-checkout-for-bachs' ); ?></p></div>
 			<?php endif; ?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -69,42 +69,42 @@ final class SettingsPage {
 				<table class="form-table" role="presentation">
 					<tbody>
 						<tr>
-							<th scope="row"><label for="etchpoint-bachs-environment"><?php echo esc_html__( 'Environment', 'payment-integrations-for-bachs' ); ?></label></th>
+							<th scope="row"><label for="etchpoint-bachs-environment"><?php echo esc_html__( 'Environment', 'etchcon-checkout-for-bachs' ); ?></label></th>
 							<td>
 								<select id="etchpoint-bachs-environment" name="environment">
-									<option value="sandbox" <?php selected( $environment, Environment::SANDBOX->value ); ?>><?php echo esc_html__( 'Sandbox', 'payment-integrations-for-bachs' ); ?></option>
-									<option value="live" <?php selected( $environment, Environment::LIVE->value ); ?>><?php echo esc_html__( 'Live', 'payment-integrations-for-bachs' ); ?></option>
+									<option value="sandbox" <?php selected( $environment, Environment::SANDBOX->value ); ?>><?php echo esc_html__( 'Sandbox', 'etchcon-checkout-for-bachs' ); ?></option>
+									<option value="live" <?php selected( $environment, Environment::LIVE->value ); ?>><?php echo esc_html__( 'Live', 'etchcon-checkout-for-bachs' ); ?></option>
 								</select>
-								<p class="description"><?php echo esc_html__( 'Use sandbox while testing. Live mode requires HTTPS.', 'payment-integrations-for-bachs' ); ?></p>
+								<p class="description"><?php echo esc_html__( 'Use sandbox while testing. Live mode requires HTTPS.', 'etchcon-checkout-for-bachs' ); ?></p>
 							</td>
 						</tr>
 
-						<?php self::render_secret_row( 'sandbox_secret_key', __( 'Sandbox secret key', 'payment-integrations-for-bachs' ), 'sk_sandbox_', self::is_configured( $settings, 'sandbox_secret_key' ), 'ETCHPOINT_BACHS_SANDBOX_SECRET_KEY' ); ?>
-						<?php self::render_secret_row( 'live_secret_key', __( 'Live secret key', 'payment-integrations-for-bachs' ), 'sk_live_', self::is_configured( $settings, 'live_secret_key' ), 'ETCHPOINT_BACHS_LIVE_SECRET_KEY' ); ?>
-						<?php self::render_secret_row( 'webhook_secret', __( 'Webhook signing secret', 'payment-integrations-for-bachs' ), __( 'Paste the active webhook signing secret', 'payment-integrations-for-bachs' ), self::is_configured( $settings, 'webhook_secret' ), 'ETCHPOINT_BACHS_WEBHOOK_SECRET' ); ?>
-						<?php self::render_secret_row( 'webhook_secret_previous', __( 'Previous webhook secret', 'payment-integrations-for-bachs' ), __( 'Optional, for secret rotation', 'payment-integrations-for-bachs' ), self::is_configured( $settings, 'webhook_secret_previous' ), 'ETCHPOINT_BACHS_WEBHOOK_SECRET_PREVIOUS' ); ?>
+						<?php self::render_secret_row( 'sandbox_secret_key', __( 'Sandbox secret key', 'etchcon-checkout-for-bachs' ), 'sk_sandbox_', self::is_configured( $settings, 'sandbox_secret_key' ), 'ETCHPOINT_BACHS_SANDBOX_SECRET_KEY' ); ?>
+						<?php self::render_secret_row( 'live_secret_key', __( 'Live secret key', 'etchcon-checkout-for-bachs' ), 'sk_live_', self::is_configured( $settings, 'live_secret_key' ), 'ETCHPOINT_BACHS_LIVE_SECRET_KEY' ); ?>
+						<?php self::render_secret_row( 'webhook_secret', __( 'Webhook signing secret', 'etchcon-checkout-for-bachs' ), __( 'Paste the active webhook signing secret', 'etchcon-checkout-for-bachs' ), self::is_configured( $settings, 'webhook_secret' ), 'ETCHPOINT_BACHS_WEBHOOK_SECRET' ); ?>
+						<?php self::render_secret_row( 'webhook_secret_previous', __( 'Previous webhook secret', 'etchcon-checkout-for-bachs' ), __( 'Optional, for secret rotation', 'etchcon-checkout-for-bachs' ), self::is_configured( $settings, 'webhook_secret_previous' ), 'ETCHPOINT_BACHS_WEBHOOK_SECRET_PREVIOUS' ); ?>
 
 						<tr>
-							<th scope="row"><label for="etchpoint-bachs-organization-id"><?php echo esc_html__( 'Organization ID', 'payment-integrations-for-bachs' ); ?></label></th>
+							<th scope="row"><label for="etchpoint-bachs-organization-id"><?php echo esc_html__( 'Organization ID', 'etchcon-checkout-for-bachs' ); ?></label></th>
 							<td>
 								<input id="etchpoint-bachs-organization-id" name="organization_id" type="text" class="regular-text" value="<?php echo esc_attr( self::setting( $settings, 'organization_id', '' ) ); ?>" autocomplete="off" />
-								<p class="description"><?php echo esc_html__( 'Optional. Pins payment and webhook verification to one Bachs organization.', 'payment-integrations-for-bachs' ); ?></p>
+								<p class="description"><?php echo esc_html__( 'Optional. Pins payment and webhook verification to one Bachs organization.', 'etchcon-checkout-for-bachs' ); ?></p>
 								<?php self::render_constant_note( 'ETCHPOINT_BACHS_ORGANIZATION_ID' ); ?>
 							</td>
 						</tr>
 
 						<tr>
-							<th scope="row"><label for="etchpoint-bachs-webhook-url"><?php echo esc_html__( 'Webhook endpoint', 'payment-integrations-for-bachs' ); ?></label></th>
+							<th scope="row"><label for="etchpoint-bachs-webhook-url"><?php echo esc_html__( 'Webhook endpoint', 'etchcon-checkout-for-bachs' ); ?></label></th>
 							<td>
 								<input id="etchpoint-bachs-webhook-url" type="url" class="large-text code" value="<?php echo esc_attr( $webhook_url ); ?>" readonly />
-								<p class="description"><?php echo esc_html__( 'Add this URL as the webhook endpoint in Bachs, then paste the webhook signing secret above.', 'payment-integrations-for-bachs' ); ?></p>
-								<p class="description"><?php echo esc_html__( 'Subscribe to: collection.succeeded, collection.failed, collection.underpaid, checkout.expired, refund.paid and refund.failed.', 'payment-integrations-for-bachs' ); ?></p>
+								<p class="description"><?php echo esc_html__( 'Add this URL as the webhook endpoint in Bachs, then paste the webhook signing secret above.', 'etchcon-checkout-for-bachs' ); ?></p>
+								<p class="description"><?php echo esc_html__( 'Subscribe to: collection.succeeded, collection.failed, collection.underpaid, checkout.expired, refund.paid and refund.failed.', 'etchcon-checkout-for-bachs' ); ?></p>
 							</td>
 						</tr>
 					</tbody>
 				</table>
 
-				<?php submit_button( __( 'Save Bachs settings', 'payment-integrations-for-bachs' ) ); ?>
+				<?php submit_button( __( 'Save Bachs settings', 'etchcon-checkout-for-bachs' ) ); ?>
 			</form>
 		</div>
 		<?php
@@ -195,18 +195,18 @@ final class SettingsPage {
 			<th scope="row"><label for="<?php echo esc_attr( $field_id ); ?>"><?php echo esc_html( $label ); ?></label></th>
 			<td>
 				<?php if ( $constant_defined ) : ?>
-					<p><strong><?php echo esc_html__( 'Managed in wp-config.php', 'payment-integrations-for-bachs' ); ?></strong></p>
-					<p class="description"><?php echo esc_html__( 'This value is already configured outside WordPress and does not need to be entered here.', 'payment-integrations-for-bachs' ); ?></p>
+					<p><strong><?php echo esc_html__( 'Managed in wp-config.php', 'etchcon-checkout-for-bachs' ); ?></strong></p>
+					<p class="description"><?php echo esc_html__( 'This value is already configured outside WordPress and does not need to be entered here.', 'etchcon-checkout-for-bachs' ); ?></p>
 				<?php elseif ( $configured ) : ?>
-					<p><strong><?php echo esc_html__( 'Configured', 'payment-integrations-for-bachs' ); ?></strong></p>
-					<p class="description"><?php echo esc_html__( 'The saved value is hidden and will continue to be used. You do not need to enter it again.', 'payment-integrations-for-bachs' ); ?></p>
+					<p><strong><?php echo esc_html__( 'Configured', 'etchcon-checkout-for-bachs' ); ?></strong></p>
+					<p class="description"><?php echo esc_html__( 'The saved value is hidden and will continue to be used. You do not need to enter it again.', 'etchcon-checkout-for-bachs' ); ?></p>
 					<details>
-						<summary><?php echo esc_html__( 'Replace or remove', 'payment-integrations-for-bachs' ); ?></summary>
+						<summary><?php echo esc_html__( 'Replace or remove', 'etchcon-checkout-for-bachs' ); ?></summary>
 						<p>
 							<input id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="password" class="regular-text" value="" placeholder="<?php echo esc_attr( $placeholder ); ?>" autocomplete="new-password" />
 						</p>
-						<p class="description"><?php echo esc_html__( 'Enter a new value only if you want to replace the one currently saved.', 'payment-integrations-for-bachs' ); ?></p>
-						<p><label><input type="checkbox" name="<?php echo esc_attr( 'clear_' . $name ); ?>" value="1" /> <?php echo esc_html__( 'Remove the saved value', 'payment-integrations-for-bachs' ); ?></label></p>
+						<p class="description"><?php echo esc_html__( 'Enter a new value only if you want to replace the one currently saved.', 'etchcon-checkout-for-bachs' ); ?></p>
+						<p><label><input type="checkbox" name="<?php echo esc_attr( 'clear_' . $name ); ?>" value="1" /> <?php echo esc_html__( 'Remove the saved value', 'etchcon-checkout-for-bachs' ); ?></label></p>
 					</details>
 				<?php else : ?>
 					<input id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="password" class="regular-text" value="" placeholder="<?php echo esc_attr( $placeholder ); ?>" autocomplete="new-password" />
@@ -228,7 +228,7 @@ final class SettingsPage {
 			return;
 		}
 		?>
-		<p class="description"><strong><?php echo esc_html( $constant_name ); ?></strong> <?php echo esc_html__( 'is defined in wp-config.php and overrides this saved value.', 'payment-integrations-for-bachs' ); ?></p>
+		<p class="description"><strong><?php echo esc_html( $constant_name ); ?></strong> <?php echo esc_html__( 'is defined in wp-config.php and overrides this saved value.', 'etchcon-checkout-for-bachs' ); ?></p>
 		<?php
 	}
 
@@ -260,11 +260,11 @@ final class SettingsPage {
 	 *
 	 * @param array<string, string> $settings Settings array.
 	 * @param string                $key      Setting key.
-	 * @param string                $fallback Default value.
+	 * @param string                $default  Default value.
 	 * @return string
 	 */
-	private static function setting( array $settings, string $key, string $fallback ): string {
-		return isset( $settings[ $key ] ) ? $settings[ $key ] : $fallback;
+	private static function setting( array $settings, string $key, string $default ): string {
+		return isset( $settings[ $key ] ) ? $settings[ $key ] : $default;
 	}
 
 	/**
@@ -323,23 +323,23 @@ final class SettingsPage {
 		return match ( $status ) {
 			'saved'               => array(
 				'class'   => 'notice-success',
-				'message' => __( 'Bachs settings saved.', 'payment-integrations-for-bachs' ),
+				'message' => __( 'Bachs settings saved.', 'etchcon-checkout-for-bachs' ),
 			),
 			'invalid_sandbox_key' => array(
 				'class'   => 'notice-error',
-				'message' => __( 'The sandbox secret key must use the sk_sandbox_ prefix.', 'payment-integrations-for-bachs' ),
+				'message' => __( 'The sandbox secret key must use the sk_sandbox_ prefix.', 'etchcon-checkout-for-bachs' ),
 			),
 			'invalid_live_key'    => array(
 				'class'   => 'notice-error',
-				'message' => __( 'The live secret key must use the sk_live_ prefix.', 'payment-integrations-for-bachs' ),
+				'message' => __( 'The live secret key must use the sk_live_ prefix.', 'etchcon-checkout-for-bachs' ),
 			),
 			'invalid_environment' => array(
 				'class'   => 'notice-error',
-				'message' => __( 'Choose either the sandbox or live Bachs environment.', 'payment-integrations-for-bachs' ),
+				'message' => __( 'Choose either the sandbox or live Bachs environment.', 'etchcon-checkout-for-bachs' ),
 			),
 			'invalid_organization' => array(
 				'class'   => 'notice-error',
-				'message' => __( 'The organization ID must not contain surrounding whitespace.', 'payment-integrations-for-bachs' ),
+				'message' => __( 'The organization ID must not contain surrounding whitespace.', 'etchcon-checkout-for-bachs' ),
 			),
 			default               => null,
 		};
@@ -371,7 +371,7 @@ final class SettingsPage {
 	 */
 	private static function assert_capability(): void {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage Bachs settings.', 'payment-integrations-for-bachs' ) );
+			wp_die( esc_html__( 'You do not have permission to manage Bachs settings.', 'etchcon-checkout-for-bachs' ) );
 		}
 	}
 }

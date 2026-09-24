@@ -40,7 +40,7 @@ final class Integration {
 	 * @return array<string, string>
 	 */
 	public static function add_gateway( array $gateways ): array {
-		$gateways[ self::GATEWAY ] = __( 'Bachs', 'payment-integrations-for-bachs' );
+		$gateways[ self::GATEWAY ] = __( 'Bachs', 'etchcon-checkout-for-bachs' );
 
 		return $gateways;
 	}

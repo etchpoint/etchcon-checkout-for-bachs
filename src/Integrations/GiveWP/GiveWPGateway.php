@@ -52,7 +52,7 @@ final class GiveWPGateway extends PaymentGateway {
 	 * @return string
 	 */
 	public function getName(): string {
-		return __( 'Bachs', 'payment-integrations-for-bachs' );
+		return __( 'Bachs', 'etchcon-checkout-for-bachs' );
 	}
 
 	/**
@@ -61,7 +61,7 @@ final class GiveWPGateway extends PaymentGateway {
 	 * @return string
 	 */
 	public function getPaymentMethodLabel(): string {
-		return __( 'Bachs', 'payment-integrations-for-bachs' );
+		return __( 'Bachs', 'etchcon-checkout-for-bachs' );
 	}
 
 	/**
@@ -75,7 +75,7 @@ final class GiveWPGateway extends PaymentGateway {
 		unset( $form_id, $args );
 
 		return '<div class="etchpoint-bachs-givewp-help"><p>'
-			. esc_html__( 'You will be redirected to Bachs to complete your donation securely.', 'payment-integrations-for-bachs' )
+			. esc_html__( 'You will be redirected to Bachs to complete your donation securely.', 'etchcon-checkout-for-bachs' )
 			. '</p></div>';
 	}
 
@@ -90,7 +90,7 @@ final class GiveWPGateway extends PaymentGateway {
 
 		wp_enqueue_script(
 			'etchpoint-bachs-givewp',
-			plugins_url( 'assets/js/givewp.js', dirname( __DIR__, 3 ) . '/payment-integrations-for-bachs.php' ),
+			plugins_url( 'assets/js/givewp.js', dirname( __DIR__, 3 ) . '/etchcon-checkout-for-bachs.php' ),
 			array( 'react', 'wp-element' ),
 			'1.0.0',
 			true
@@ -107,7 +107,7 @@ final class GiveWPGateway extends PaymentGateway {
 		unset( $form_id );
 
 		return array(
-			'message' => __( 'You will be redirected to Bachs to complete your donation securely.', 'payment-integrations-for-bachs' ),
+			'message' => __( 'You will be redirected to Bachs to complete your donation securely.', 'etchcon-checkout-for-bachs' ),
 		);
 	}
 
@@ -125,7 +125,7 @@ final class GiveWPGateway extends PaymentGateway {
 			$configuration = RuntimeConfiguration::from_wordpress();
 
 			if ( ! $configuration->is_payment_ready() ) {
-				throw new PaymentGatewayException( __( 'Bachs payment configuration is incomplete.', 'payment-integrations-for-bachs' ) );
+				throw new PaymentGatewayException( __( 'Bachs payment configuration is incomplete.', 'etchcon-checkout-for-bachs' ) );
 			}
 
 			$donation_id = (int) $donation->id;
@@ -135,7 +135,7 @@ final class GiveWPGateway extends PaymentGateway {
 			$currency    = $amount_data['currency'] ?? null;
 
 			if ( 1 > $donation_id || 1 > $form_id || ! is_string( $total ) || ! is_string( $currency ) ) {
-				throw new PaymentGatewayException( __( 'GiveWP donation data is incomplete.', 'payment-integrations-for-bachs' ) );
+				throw new PaymentGatewayException( __( 'GiveWP donation data is incomplete.', 'etchcon-checkout-for-bachs' ) );
 			}
 
 			$client      = new ApiClient( $configuration->environment(), $configuration->api_key() );
@@ -159,7 +159,7 @@ final class GiveWPGateway extends PaymentGateway {
 			throw $exception;
 		} catch ( Throwable ) {
 			throw new PaymentGatewayException(
-				esc_html__( 'Bachs checkout could not be started. Please try again.', 'payment-integrations-for-bachs' )
+				esc_html__( 'Bachs checkout could not be started. Please try again.', 'etchcon-checkout-for-bachs' )
 			);
 		}
 	}

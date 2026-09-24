@@ -70,7 +70,7 @@ jobs:
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/payment-integrations-for-bachs'
+          build-dir: './build/etchcon-checkout-for-bachs'
           wp-version: 'latest'
           include-experimental: 'false'
 
@@ -78,12 +78,12 @@ jobs:
         if: ${{ success() }}
         run: |
           cd build
-          zip -qr payment-integrations-for-bachs.zip payment-integrations-for-bachs
+          zip -qr etchcon-checkout-for-bachs.zip etchcon-checkout-for-bachs
 
       - name: Upload release candidate
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: payment-integrations-for-bachs-release-candidate
-          path: build/payment-integrations-for-bachs.zip
+          name: etchcon-checkout-for-bachs-release-candidate
+          path: build/etchcon-checkout-for-bachs.zip
           if-no-files-found: error

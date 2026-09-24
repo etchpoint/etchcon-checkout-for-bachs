@@ -129,7 +129,7 @@ final class WooCommerceRefundFulfillmentHandler implements RefundFulfillmentHand
 			return $this->retryable_failure( $refund_id, $event_id, 'woo_refund_create_failed', 'WooCommerce could not record the provider-confirmed refund.' );
 		}
 
-		$order->add_order_note( __( 'Bachs refund confirmed by signed webhook and recorded locally.', 'payment-integrations-for-bachs' ) );
+		$order->add_order_note( __( 'Bachs refund confirmed by signed webhook and recorded locally.', 'etchcon-checkout-for-bachs' ) );
 
 		return $this->finalize( $refund_id, $event_id, (string) $local_refund->get_id(), RefundFulfillmentDisposition::APPLIED );
 	}

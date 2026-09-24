@@ -35,7 +35,7 @@ final class PMProGatewayRuntime {
 		if ( ! is_object( $membership_level ) || pmpro_isLevelRecurring( $membership_level ) ) {
 			self::set_error(
 				$order,
-				__( 'Bachs currently supports one-time Paid Memberships Pro checkouts only.', 'payment-integrations-for-bachs' )
+				__( 'Bachs currently supports one-time Paid Memberships Pro checkouts only.', 'etchcon-checkout-for-bachs' )
 			);
 
 			return false;
@@ -47,7 +47,7 @@ final class PMProGatewayRuntime {
 			if ( ! $configuration->is_payment_ready() ) {
 				self::set_error(
 					$order,
-					__( 'Bachs payment configuration is incomplete.', 'payment-integrations-for-bachs' )
+					__( 'Bachs payment configuration is incomplete.', 'etchcon-checkout-for-bachs' )
 				);
 
 				return false;
@@ -60,7 +60,7 @@ final class PMProGatewayRuntime {
 			if ( ! $order->saveOrder() || 1 > (int) $order->id ) {
 				self::set_error(
 					$order,
-					__( 'Unable to prepare the membership order for payment.', 'payment-integrations-for-bachs' )
+					__( 'Unable to prepare the membership order for payment.', 'etchcon-checkout-for-bachs' )
 				);
 
 				return false;
@@ -77,15 +77,15 @@ final class PMProGatewayRuntime {
 				(int) $order->user_id,
 				$membership_level
 			);
-			$cancel_url  = pmpro_url( 'checkout', '?pmpro_level=' . $membership_id );
-			$client      = new ApiClient( $configuration->environment(), $configuration->api_key() );
-			$coordinator = new PMProCheckoutCoordinator(
+			$cancel_url    = pmpro_url( 'checkout', '?pmpro_level=' . $membership_id );
+			$client        = new ApiClient( $configuration->environment(), $configuration->api_key() );
+			$coordinator   = new PMProCheckoutCoordinator(
 				self::intent_repository(),
 				new CheckoutApi( $client ),
 				$configuration->environment(),
 				substr( hash( 'sha256', home_url( '/' ) ), 0, 12 )
 			);
-			$result      = $coordinator->start(
+			$result        = $coordinator->start(
 				(int) $order->id,
 				$membership_id,
 				(string) $order->total,
@@ -101,7 +101,7 @@ final class PMProGatewayRuntime {
 		} catch ( Throwable ) {
 			self::set_error(
 				$order,
-				__( 'Bachs checkout could not be started. Please try again.', 'payment-integrations-for-bachs' )
+				__( 'Bachs checkout could not be started. Please try again.', 'etchcon-checkout-for-bachs' )
 			);
 
 			return false;

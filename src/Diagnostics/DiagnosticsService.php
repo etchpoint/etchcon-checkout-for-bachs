@@ -74,7 +74,7 @@ final class DiagnosticsService {
 			$this->https_check(),
 			new DiagnosticCheck(
 				'environment',
-				__( 'Environment', 'payment-integrations-for-bachs' ),
+				__( 'Environment', 'etchcon-checkout-for-bachs' ),
 				DiagnosticStatus::INFO,
 				ucfirst( $this->configuration->environment()->value )
 			),
@@ -85,13 +85,13 @@ final class DiagnosticsService {
 			$this->schema_check(),
 			new DiagnosticCheck(
 				'unresolved_mismatches',
-				__( 'Unresolved payment mismatches', 'payment-integrations-for-bachs' ),
+				__( 'Unresolved payment mismatches', 'etchcon-checkout-for-bachs' ),
 				0 === $this->intents->count_unresolved_mismatches() ? DiagnosticStatus::HEALTHY : DiagnosticStatus::WARNING,
 				(string) $this->intents->count_unresolved_mismatches()
 			),
 			new DiagnosticCheck(
 				'unresolved_events',
-				__( 'Failed or review events', 'payment-integrations-for-bachs' ),
+				__( 'Failed or review events', 'etchcon-checkout-for-bachs' ),
 				0 === $this->events->count_unresolved_events() ? DiagnosticStatus::HEALTHY : DiagnosticStatus::WARNING,
 				(string) $this->events->count_unresolved_events()
 			),
@@ -112,7 +112,7 @@ final class DiagnosticsService {
 
 		return new DiagnosticCheck(
 			'php_version',
-			__( 'PHP version', 'payment-integrations-for-bachs' ),
+			__( 'PHP version', 'etchcon-checkout-for-bachs' ),
 			$supported ? DiagnosticStatus::HEALTHY : DiagnosticStatus::ERROR,
 			$version
 		);
@@ -129,7 +129,7 @@ final class DiagnosticsService {
 
 		return new DiagnosticCheck(
 			'wordpress_version',
-			__( 'WordPress version', 'payment-integrations-for-bachs' ),
+			__( 'WordPress version', 'etchcon-checkout-for-bachs' ),
 			$supported ? DiagnosticStatus::HEALTHY : DiagnosticStatus::ERROR,
 			$version
 		);
@@ -146,9 +146,9 @@ final class DiagnosticsService {
 
 		return new DiagnosticCheck(
 			'https',
-			__( 'HTTPS', 'payment-integrations-for-bachs' ),
+			__( 'HTTPS', 'etchcon-checkout-for-bachs' ),
 			$secure ? DiagnosticStatus::HEALTHY : DiagnosticStatus::ERROR,
-			$secure ? __( 'Enabled', 'payment-integrations-for-bachs' ) : __( 'Required for live payments', 'payment-integrations-for-bachs' )
+			$secure ? __( 'Enabled', 'etchcon-checkout-for-bachs' ) : __( 'Required for live payments', 'etchcon-checkout-for-bachs' )
 		);
 	}
 
@@ -161,13 +161,13 @@ final class DiagnosticsService {
 		try {
 			$this->configuration->api_key();
 			$status = DiagnosticStatus::HEALTHY;
-			$detail = __( 'Configured', 'payment-integrations-for-bachs' );
+			$detail = __( 'Configured', 'etchcon-checkout-for-bachs' );
 		} catch ( RuntimeException ) {
 			$status = DiagnosticStatus::ERROR;
-			$detail = __( 'Missing or does not match the selected environment', 'payment-integrations-for-bachs' );
+			$detail = __( 'Missing or does not match the selected environment', 'etchcon-checkout-for-bachs' );
 		}
 
-		return new DiagnosticCheck( 'api_key', __( 'Bachs API key', 'payment-integrations-for-bachs' ), $status, $detail );
+		return new DiagnosticCheck( 'api_key', __( 'Bachs API key', 'etchcon-checkout-for-bachs' ), $status, $detail );
 	}
 
 	/**
@@ -179,13 +179,13 @@ final class DiagnosticsService {
 		try {
 			$this->configuration->webhook_secrets();
 			$status = DiagnosticStatus::HEALTHY;
-			$detail = __( 'Configured', 'payment-integrations-for-bachs' );
+			$detail = __( 'Configured', 'etchcon-checkout-for-bachs' );
 		} catch ( RuntimeException ) {
 			$status = DiagnosticStatus::ERROR;
-			$detail = __( 'Not configured', 'payment-integrations-for-bachs' );
+			$detail = __( 'Not configured', 'etchcon-checkout-for-bachs' );
 		}
 
-		return new DiagnosticCheck( 'webhook_secret', __( 'Webhook signing secret', 'payment-integrations-for-bachs' ), $status, $detail );
+		return new DiagnosticCheck( 'webhook_secret', __( 'Webhook signing secret', 'etchcon-checkout-for-bachs' ), $status, $detail );
 	}
 
 	/**
@@ -200,26 +200,26 @@ final class DiagnosticsService {
 
 			return new DiagnosticCheck(
 				'api_connectivity',
-				__( 'Bachs API', 'payment-integrations-for-bachs' ),
+				__( 'Bachs API', 'etchcon-checkout-for-bachs' ),
 				DiagnosticStatus::HEALTHY,
-				__( 'Healthy', 'payment-integrations-for-bachs' )
+				__( 'Healthy', 'etchcon-checkout-for-bachs' )
 			);
 		} catch ( ApiException $exception ) {
 			if ( 401 === $exception->http_status() ) {
-				$detail = __( 'Unauthorized. Check the API key.', 'payment-integrations-for-bachs' );
+				$detail = __( 'Unauthorized. Check the API key.', 'etchcon-checkout-for-bachs' );
 			} elseif ( 403 === $exception->http_status() ) {
-				$detail = __( 'Forbidden. Payments permission is not available.', 'payment-integrations-for-bachs' );
+				$detail = __( 'Forbidden. Payments permission is not available.', 'etchcon-checkout-for-bachs' );
 			} else {
-				$detail = __( 'Bachs could not be reached safely.', 'payment-integrations-for-bachs' );
+				$detail = __( 'Bachs could not be reached safely.', 'etchcon-checkout-for-bachs' );
 			}
 
-			return new DiagnosticCheck( 'api_connectivity', __( 'Bachs API', 'payment-integrations-for-bachs' ), DiagnosticStatus::ERROR, $detail );
+			return new DiagnosticCheck( 'api_connectivity', __( 'Bachs API', 'etchcon-checkout-for-bachs' ), DiagnosticStatus::ERROR, $detail );
 		} catch ( Throwable ) {
 			return new DiagnosticCheck(
 				'api_connectivity',
-				__( 'Bachs API', 'payment-integrations-for-bachs' ),
+				__( 'Bachs API', 'etchcon-checkout-for-bachs' ),
 				DiagnosticStatus::ERROR,
-				__( 'API configuration is incomplete.', 'payment-integrations-for-bachs' )
+				__( 'API configuration is incomplete.', 'etchcon-checkout-for-bachs' )
 			);
 		}
 	}
@@ -234,11 +234,11 @@ final class DiagnosticsService {
 
 		return new DiagnosticCheck(
 			'wp_cron',
-			__( 'WP-Cron recovery', 'payment-integrations-for-bachs' ),
+			__( 'WP-Cron recovery', 'etchcon-checkout-for-bachs' ),
 			$disabled ? DiagnosticStatus::WARNING : DiagnosticStatus::HEALTHY,
 			$disabled
-				? __( 'Disabled. Configure a real cron runner for scheduled reconciliation.', 'payment-integrations-for-bachs' )
-				: __( 'Available', 'payment-integrations-for-bachs' )
+				? __( 'Disabled. Configure a real cron runner for scheduled reconciliation.', 'etchcon-checkout-for-bachs' )
+				: __( 'Available', 'etchcon-checkout-for-bachs' )
 		);
 	}
 
@@ -253,9 +253,9 @@ final class DiagnosticsService {
 
 		return new DiagnosticCheck(
 			'database_schema',
-			__( 'Database schema', 'payment-integrations-for-bachs' ),
+			__( 'Database schema', 'etchcon-checkout-for-bachs' ),
 			$healthy ? DiagnosticStatus::HEALTHY : DiagnosticStatus::ERROR,
-			$healthy ? Schema::VERSION : __( 'Migration required', 'payment-integrations-for-bachs' )
+			$healthy ? Schema::VERSION : __( 'Migration required', 'etchcon-checkout-for-bachs' )
 		);
 	}
 
@@ -291,9 +291,9 @@ final class DiagnosticsService {
 
 		return new DiagnosticCheck(
 			'integrations',
-			__( 'Detected integrations', 'payment-integrations-for-bachs' ),
+			__( 'Detected integrations', 'etchcon-checkout-for-bachs' ),
 			DiagnosticStatus::INFO,
-			array() === $active ? __( 'None detected', 'payment-integrations-for-bachs' ) : implode( ', ', $active )
+			array() === $active ? __( 'None detected', 'etchcon-checkout-for-bachs' ) : implode( ', ', $active )
 		);
 	}
 }

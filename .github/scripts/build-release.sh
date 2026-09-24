@@ -3,13 +3,13 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUILD_ROOT="${ROOT_DIR}/build"
-PLUGIN_SLUG="payment-integrations-for-bachs"
+PLUGIN_SLUG="etchcon-checkout-for-bachs"
 PLUGIN_DIR="${BUILD_ROOT}/${PLUGIN_SLUG}"
 
 rm -rf "${PLUGIN_DIR}"
 mkdir -p "${PLUGIN_DIR}"
 
-cp "${ROOT_DIR}/payment-integrations-for-bachs.php" "${PLUGIN_DIR}/"
+cp "${ROOT_DIR}/etchcon-checkout-for-bachs.php" "${PLUGIN_DIR}/"
 cp "${ROOT_DIR}/uninstall.php" "${PLUGIN_DIR}/"
 cp "${ROOT_DIR}/readme.txt" "${PLUGIN_DIR}/"
 cp "${ROOT_DIR}/LICENSE" "${PLUGIN_DIR}/"

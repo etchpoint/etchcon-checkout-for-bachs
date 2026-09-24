@@ -1,5 +1,5 @@
 {
-  "name": "etchpoint/payment-integrations-for-bachs",
+  "name": "etchpoint/etchcon-checkout-for-bachs",
   "description": "Bachs payment integrations for WooCommerce, Paid Memberships Pro, Gravity Forms, Fluent Forms and GiveWP.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",

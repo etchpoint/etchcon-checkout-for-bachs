@@ -31,18 +31,18 @@ final class Gateway extends WC_Payment_Gateway {
 	 */
 	public function __construct() {
 		$this->id                 = self::ID;
-		$this->method_title       = __( 'Bachs', 'payment-integrations-for-bachs' );
-		$this->method_description = __( 'Accept payment through Bachs hosted checkout. Configure shared Bachs credentials under Bachs Payments > Settings.', 'payment-integrations-for-bachs' );
+		$this->method_title       = __( 'Bachs', 'etchcon-checkout-for-bachs' );
+		$this->method_description = __( 'Accept payment through Bachs hosted checkout. Configure shared Bachs credentials under Bachs Payments > Settings.', 'etchcon-checkout-for-bachs' );
 		$this->has_fields         = false;
 		$this->supports           = array( 'products' );
 
 		$this->init_form_fields();
 		$this->init_settings();
 
-		$this->title       = $this->get_option( 'title', __( 'Bachs', 'payment-integrations-for-bachs' ) );
+		$this->title       = $this->get_option( 'title', __( 'Bachs', 'etchcon-checkout-for-bachs' ) );
 		$this->description = $this->get_option(
 			'description',
-			__( 'Pay securely using Bachs.', 'payment-integrations-for-bachs' )
+			__( 'Pay securely using Bachs.', 'etchcon-checkout-for-bachs' )
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'save_gateway_settings' ) );
@@ -65,23 +65,23 @@ final class Gateway extends WC_Payment_Gateway {
 	public function init_form_fields(): void {
 		$this->form_fields = array(
 			'enabled'     => array(
-				'title'   => __( 'Enable/Disable', 'payment-integrations-for-bachs' ),
+				'title'   => __( 'Enable/Disable', 'etchcon-checkout-for-bachs' ),
 				'type'    => 'checkbox',
-				'label'   => __( 'Enable Bachs hosted checkout', 'payment-integrations-for-bachs' ),
+				'label'   => __( 'Enable Bachs hosted checkout', 'etchcon-checkout-for-bachs' ),
 				'default' => 'no',
 			),
 			'title'       => array(
-				'title'       => __( 'Title', 'payment-integrations-for-bachs' ),
+				'title'       => __( 'Title', 'etchcon-checkout-for-bachs' ),
 				'type'        => 'text',
-				'description' => __( 'The payment method title shown at checkout.', 'payment-integrations-for-bachs' ),
-				'default'     => __( 'Bachs', 'payment-integrations-for-bachs' ),
+				'description' => __( 'The payment method title shown at checkout.', 'etchcon-checkout-for-bachs' ),
+				'default'     => __( 'Bachs', 'etchcon-checkout-for-bachs' ),
 				'desc_tip'    => true,
 			),
 			'description' => array(
-				'title'       => __( 'Description', 'payment-integrations-for-bachs' ),
+				'title'       => __( 'Description', 'etchcon-checkout-for-bachs' ),
 				'type'        => 'textarea',
-				'description' => __( 'The payment method description shown at checkout.', 'payment-integrations-for-bachs' ),
-				'default'     => __( 'Pay securely using Bachs.', 'payment-integrations-for-bachs' ),
+				'description' => __( 'The payment method description shown at checkout.', 'etchcon-checkout-for-bachs' ),
+				'default'     => __( 'Pay securely using Bachs.', 'etchcon-checkout-for-bachs' ),
 			),
 		);
 	}
@@ -113,7 +113,7 @@ final class Gateway extends WC_Payment_Gateway {
 		$order = wc_get_order( (int) $order_id );
 
 		if ( ! $order instanceof WC_Order ) {
-			wc_add_notice( __( 'Unable to load this order for payment.', 'payment-integrations-for-bachs' ), 'error' );
+			wc_add_notice( __( 'Unable to load this order for payment.', 'etchcon-checkout-for-bachs' ), 'error' );
 
 			return array( 'result' => 'failure' );
 		}
@@ -145,7 +145,7 @@ final class Gateway extends WC_Payment_Gateway {
 					new RuntimeException( 'WooCommerce order does not contain a valid billing email for Bachs checkout.' )
 				);
 				wc_add_notice(
-					__( 'Bachs checkout could not be started. Please check your billing email and try again.', 'payment-integrations-for-bachs' ),
+					__( 'Bachs checkout could not be started. Please check your billing email and try again.', 'etchcon-checkout-for-bachs' ),
 					'error'
 				);
 
@@ -184,7 +184,7 @@ final class Gateway extends WC_Payment_Gateway {
 		} catch ( Throwable $exception ) {
 			self::log_checkout_error( (int) $order_id, $exception );
 			wc_add_notice(
-				__( 'Bachs checkout could not be started. Please try again.', 'payment-integrations-for-bachs' ),
+				__( 'Bachs checkout could not be started. Please try again.', 'etchcon-checkout-for-bachs' ),
 				'error'
 			);
 

@@ -1,4 +1,4 @@
-=== Payment Integrations for Bachs ===
+=== EtchCon Checkout for Bachs ===
 Tags: payments, woocommerce, memberships, forms, donations
 Requires at least: 6.8
 Tested up to: 7.1
@@ -11,7 +11,9 @@ Accept Bachs hosted payments in WooCommerce, Paid Memberships Pro, Gravity Forms
 
 == Description ==
 
-Payment Integrations for Bachs connects supported WordPress commerce, membership, form, and donation plugins to Bachs hosted checkout.
+EtchCon Checkout for Bachs connects supported WordPress commerce, membership, form, and donation plugins to Bachs hosted checkout.
+
+EtchCon Checkout for Bachs is independently developed by Etchpoint and is not affiliated with or endorsed by Bachs Technologies Limited.
 
 Version 1.0.0 supports one-time payments for:
 
@@ -30,7 +32,7 @@ Recurring payments and subscriptions are not included in version 1.0.0.
 == Installation ==
 
 1. Upload the plugin ZIP through Plugins > Add New > Upload Plugin, or install it from the WordPress Plugin Directory when available.
-2. Activate Payment Integrations for Bachs.
+2. Activate EtchCon Checkout for Bachs.
 3. Open Bachs Payments > Settings and choose Sandbox or Live.
 4. Enter the matching Bachs secret API key and webhook signing secret, then save.
 5. Copy the webhook endpoint shown on the settings screen into your Bachs webhook configuration.
@@ -74,13 +76,11 @@ A refund is not treated as complete merely because the API accepted the request.
 
 Bachs Payments > Reconciliation can safely re-check provider state and retry incomplete WordPress fulfillment.
 
-The plugin also schedules an hourly WordPress cron task that checks up to 20 eligible payment records per run. With Bachs configured, these background checks can contact the Bachs API to verify transaction status and retry incomplete local fulfillment without an administrator opening the dashboard. Actual execution depends on the site's WordPress cron setup. The scheduled task is removed when the plugin is deactivated or uninstalled.
-
 Bachs Payments > Diagnostics provides read-only configuration and integration checks. Secret values and full provider responses are not displayed.
 
 == External Service ==
 
-This plugin requires Bachs, a third-party payment service provided by Bachs Technologies Limited. Once configured, the plugin contacts Bachs to create or retrieve checkout sessions, verify payments, request refunds, and reconcile eligible payment records. Requests can be triggered by customer checkout, administrator actions, automatic background reconciliation, or processing incoming Bachs webhooks. Background reconciliation does not require an administrator or customer to be actively using the site at the time of the request.
+This plugin requires Bachs, a third-party payment service provided by Bachs Technologies Limited. The plugin contacts Bachs only when a configured administrator or customer uses functionality that requires the payment service, such as creating or retrieving checkout sessions, verifying payments, requesting refunds, or receiving Bachs webhooks.
 
 Bachs service: https://bachs.io/
 
@@ -141,13 +141,6 @@ The payment remains recorded and can be safely rechecked from Bachs Payments > R
 = Are recurring payments supported? =
 
 No. Version 1.0.0 is limited to one-time payment flows.
-
-== Source code and development ==
-
-Source code, build scripts, and development instructions are available at:
-https://github.com/etchpoint/payment-integrations-for-bachs/
-
-See README.md in the repository for Composer setup, quality checks, and release packaging instructions. The release build script is .github/scripts/build-release.sh and the CI workflow is .github/workflows/ci.yml.
 
 == Changelog ==
 

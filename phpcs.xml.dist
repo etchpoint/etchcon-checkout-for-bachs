@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<ruleset name="Payment Integrations for Bachs">
-	<description>WordPress and PHP compatibility rules for Payment Integrations for Bachs.</description>
+<ruleset name="EtchCon Checkout for Bachs">
+	<description>WordPress and PHP compatibility rules for EtchCon Checkout for Bachs.</description>
 
 	<arg name="basepath" value="."/>
 	<arg name="colors"/>
 	<arg value="ps"/>
 
-	<file>payment-integrations-for-bachs.php</file>
+	<file>etchcon-checkout-for-bachs.php</file>
 	<file>src</file>
 	<file>tests</file>
 	<file>uninstall.php</file>
@@ -47,7 +47,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="payment-integrations-for-bachs"/>
+				<element value="etchcon-checkout-for-bachs"/>
 			</property>
 		</properties>
 	</rule>

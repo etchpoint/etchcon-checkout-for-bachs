@@ -142,7 +142,7 @@ final class WooCommerceFulfillmentHandler implements PaymentFulfillmentHandler {
 			}
 
 			$order->add_order_note(
-				__( 'Bachs payment verified and applied.', 'payment-integrations-for-bachs' )
+				__( 'Bachs payment verified and applied.', 'etchcon-checkout-for-bachs' )
 			);
 		} catch ( Throwable ) {
 			$this->intents->mark_failed( $intent_id, 'woo_payment_complete_failed', 'WooCommerce could not apply the verified payment.' );

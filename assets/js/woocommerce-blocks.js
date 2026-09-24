@@ -15,10 +15,10 @@
 	const settings = window.wc.wcSettings.getSetting( 'bachs_data', {} );
 	const createElement = window.wp.element.createElement;
 	const registerPaymentMethod = window.wc.wcBlocksRegistry.registerPaymentMethod;
-	const title = settings.title || window.wp.i18n.__( 'Bachs', 'payment-integrations-for-bachs' );
+	const title = settings.title || window.wp.i18n.__( 'Bachs', 'etchcon-checkout-for-bachs' );
 	const description = settings.description || window.wp.i18n.__(
 		'Pay securely using Bachs.',
-		'payment-integrations-for-bachs'
+		'etchcon-checkout-for-bachs'
 	);
 	const content = createElement( 'div', null, description );
 
