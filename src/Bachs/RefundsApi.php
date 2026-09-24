@@ -51,6 +51,7 @@ final class RefundsApi {
 		$body = array(
 			'charge_id'       => $charge_id,
 			'reference'       => $reference,
+			'fee_bearer'      => 'org',
 			'idempotency_key' => $idempotency_key,
 		);
 

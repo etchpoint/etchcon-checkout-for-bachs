@@ -223,14 +223,16 @@ final class RefundRequestService {
 				$record->reason()
 			);
 		} catch ( ApiException $exception ) {
-			$status = $exception->is_retryable() ? RefundStatus::REQUESTED : RefundStatus::FAILED;
-			$code   = $exception->is_retryable() ? 'provider_retryable' : 'provider_rejected';
-			$this->refunds->mark_request_failure( $record->id(), $status, $code, 'Bachs could not accept the refund request.' );
-
-			throw self::request_exception(
-				'Bachs could not accept the refund request.',
-				$exception->is_retryable() ? RefundRequestException::RETRYABLE : RefundRequestException::INVALID_REQUEST
+			$status    = $exception->is_retryable() ? RefundStatus::REQUESTED : RefundStatus::FAILED;
+			$safe_code = $exception->is_retryable() ? RefundRequestException::RETRYABLE : self::provider_rejection_code( $exception );
+			$this->refunds->mark_request_failure(
+				$record->id(),
+				$status,
+				$safe_code,
+				'Bachs could not accept the refund request.'
 			);
+
+			throw self::request_exception( 'Bachs could not accept the refund request.', $safe_code );
 		}
 
 		$this->assert_provider_refund_matches( $record, $provider_refund, $full_refund );
@@ -306,6 +308,24 @@ final class RefundRequestService {
 		}
 
 		return 1 !== preg_match( '/^0+(?:\.0+)?$/D', $amount );
+	}
+
+	/**
+	 * Map a provider rejection to a safe administrator-facing diagnostic code.
+	 *
+	 * @param ApiException $exception Bachs API exception.
+	 * @return string
+	 */
+	private static function provider_rejection_code( ApiException $exception ): string {
+		return match ( $exception->error_code() ) {
+			'FORBIDDEN'            => RefundRequestException::PROVIDER_FORBIDDEN,
+			'UNAUTHORIZED'         => RefundRequestException::PROVIDER_UNAUTHORIZED,
+			'VALIDATION_ERROR'     => RefundRequestException::PROVIDER_VALIDATION_ERROR,
+			'NOT_FOUND'            => RefundRequestException::PROVIDER_NOT_FOUND,
+			'CONFLICT',
+			'IDEMPOTENCY_CONFLICT' => RefundRequestException::PROVIDER_CONFLICT,
+			default                => RefundRequestException::PROVIDER_REJECTED,
+		};
 	}
 
 	/**

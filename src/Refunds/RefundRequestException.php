@@ -39,6 +39,24 @@ final class RefundRequestException extends RuntimeException {
 	/** Provider refund response does not match the persisted operation. */
 	public const PROVIDER_REFUND_MISMATCH = 'provider_refund_mismatch';
 
+	/** Provider rejected the request because the API key lacks permission. */
+	public const PROVIDER_FORBIDDEN = 'provider_forbidden';
+
+	/** Provider rejected the request because the API key is invalid for this environment. */
+	public const PROVIDER_UNAUTHORIZED = 'provider_unauthorized';
+
+	/** Provider rejected one or more refund request fields. */
+	public const PROVIDER_VALIDATION_ERROR = 'provider_validation_error';
+
+	/** Provider could not find the charge being refunded. */
+	public const PROVIDER_NOT_FOUND = 'provider_not_found';
+
+	/** Provider reported a duplicate or conflicting refund request. */
+	public const PROVIDER_CONFLICT = 'provider_conflict';
+
+	/** Provider rejected the request for another non-retryable reason. */
+	public const PROVIDER_REJECTED = 'provider_rejected';
+
 	/** Temporary provider failure code. */
 	public const RETRYABLE = 'retryable_failure';
 

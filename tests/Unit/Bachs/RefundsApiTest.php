@@ -33,6 +33,7 @@ final class RefundsApiTest extends TestCase {
 			array(
 				'charge_id'       => 'pay_123',
 				'reference'       => 'wp-refund-123',
+				'fee_bearer'      => 'org',
 				'idempotency_key' => 'idem_123',
 				'amount'          => '12.50',
 				'reason'          => 'Customer request',
