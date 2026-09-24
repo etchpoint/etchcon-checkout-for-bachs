@@ -95,11 +95,15 @@ final class FluentFormsProcessor extends BaseProcessor {
 		// phpcs:enable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 		unset( $submission_data, $method_settings );
 
+		// Form models can expose attributes through magic property access.
 		$submission_id = (int) $submission_id;
-		$form_values   = get_object_vars( $form );
-		$form_id       = isset( $form_values['id'] ) ? (int) $form_values['id'] : 0;
+		$form_id       = isset( $form->id ) ? (int) $form->id : 0;
 
-		if ( 1 > $submission_id || 1 > $form_id || true === $has_subscription ) {
+		if ( 1 > $submission_id || 1 > $form_id ) {
+			wp_send_json_error( array( 'message' => __( 'Bachs could not identify the Fluent Forms submission or form. Please reload the page and try again.', 'payment-integrations-for-bachs' ) ), 422 );
+		}
+
+		if ( true === $has_subscription ) {
 			wp_send_json_error( array( 'message' => __( 'Bachs currently supports one-time Fluent Forms payments only.', 'payment-integrations-for-bachs' ) ), 422 );
 		}
 
