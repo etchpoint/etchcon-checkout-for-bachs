@@ -1,6 +1,7 @@
 === Payment Integrations for Bachs ===
 Tags: payments, woocommerce, memberships, forms, donations
 Requires at least: 6.8
+Tested up to: 7.1.2
 Requires PHP: 8.1
 Stable tag: 1.0.0
 License: GPL-2.0-or-later
@@ -140,6 +141,13 @@ The payment remains recorded and can be safely rechecked from Bachs Payments > R
 = Are recurring payments supported? =
 
 No. Version 1.0.0 is limited to one-time payment flows.
+
+== Source code and development ==
+
+Source code, build scripts, and development instructions are available at:
+https://github.com/etchpoint/payment-integrations-for-bachs/
+
+See README.md in the repository for Composer setup, quality checks, and release packaging instructions. The release build script is .github/scripts/build-release.sh and the CI workflow is .github/workflows/ci.yml.
 
 == Changelog ==
 
