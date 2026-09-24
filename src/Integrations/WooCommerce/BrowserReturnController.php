@@ -296,8 +296,8 @@ final class BrowserReturnController {
 	 * provider checkout has already been submitted and is awaiting authoritative
 	 * confirmation.
 	 *
-	 * @param array<string, array<string, mixed>>  $actions Existing WooCommerce order actions.
-	 * @param WC_Order                           $order   WooCommerce order.
+	 * @param array<string, array<string, mixed>> $actions Existing WooCommerce order actions.
+	 * @param WC_Order                            $order   WooCommerce order.
 	 * @return array<string, array<string, mixed>>
 	 */
 	public static function filter_order_actions( array $actions, WC_Order $order ): array {
