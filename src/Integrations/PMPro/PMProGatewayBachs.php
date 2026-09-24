@@ -9,11 +9,12 @@ declare(strict_types=1);
 
 use Etchpoint\BachsIntegrations\Integrations\PMPro\PMProGatewayRuntime;
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- PMPro resolves gateways using the global PMProGateway_{gateway} class naming convention.
 /**
  * Exposes Bachs through Paid Memberships Pro's supported gateway class API.
  */
-// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- PMPro resolves gateways using the global PMProGateway_{gateway} class naming convention.
 final class PMProGateway_Bachs extends PMProGateway {
+	// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
 	/**
 	 * Create the PMPro Bachs gateway object.
 	 *

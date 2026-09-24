@@ -174,9 +174,9 @@ final class BrowserReturnController {
 			return;
 		}
 
-		$storage_key = 'etchpoint_bachs_confirm_' . $order_id;
-		$nonce       = wp_create_nonce( self::STATUS_NONCE_ACTION );
-		$plugin_file = dirname( __DIR__, 3 ) . '/etchcon-checkout-for-bachs.php';
+		$storage_key   = 'etchpoint_bachs_confirm_' . $order_id;
+		$nonce         = wp_create_nonce( self::STATUS_NONCE_ACTION );
+		$plugin_file   = dirname( __DIR__, 3 ) . '/etchcon-checkout-for-bachs.php';
 		$script_handle = 'etchpoint-bachs-woocommerce-return';
 
 		wp_enqueue_script(

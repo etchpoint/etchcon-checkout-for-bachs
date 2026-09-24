@@ -258,13 +258,13 @@ final class SettingsPage {
 	/**
 	 * Read one dashboard setting.
 	 *
-	 * @param array<string, string> $settings Settings array.
-	 * @param string                $key      Setting key.
-	 * @param string                $default  Default value.
+	 * @param array<string, string> $settings      Settings array.
+	 * @param string                $key           Setting key.
+	 * @param string                $default_value Default value.
 	 * @return string
 	 */
-	private static function setting( array $settings, string $key, string $default ): string {
-		return isset( $settings[ $key ] ) ? $settings[ $key ] : $default;
+	private static function setting( array $settings, string $key, string $default_value ): string {
+		return isset( $settings[ $key ] ) ? $settings[ $key ] : $default_value;
 	}
 
 	/**
