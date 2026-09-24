@@ -394,13 +394,14 @@ final class WebhookProcessor {
 			);
 		}
 
-		$verified_money = $this->verify_provider_payment( $payment, $intent, $charge_id, $checkout_id, $reference );
+		$verification   = $this->verify_provider_payment( $payment, $intent, $charge_id, $checkout_id, $reference );
+		$verified_money = $verification['money'];
 
 		if ( null === $verified_money ) {
 			return $this->requires_review(
 				$record,
 				$intent,
-				'provider_evidence_mismatch',
+				$verification['code'] ?? 'provider_evidence_mismatch',
 				'Authoritative Bachs payment state does not match the local payment intent.'
 			);
 		}
@@ -641,12 +642,17 @@ final class WebhookProcessor {
 	/**
 	 * Verify retrieved provider payment state against immutable local evidence.
 	 *
+	 * Bachs documents payment checkout/reference correlation fields as nullable.
+	 * The signed success event has already correlated the checkout and reference
+	 * to the immutable local intent, so these payment fields are checked only
+	 * when Bachs includes them in the payment object.
+	 *
 	 * @param ProviderPayment $payment     Authoritative Bachs payment.
 	 * @param IntentRecord    $intent      Local payment intent.
 	 * @param string          $charge_id   Event charge identifier.
 	 * @param string          $checkout_id Event checkout identifier.
 	 * @param string          $reference   Event merchant reference.
-	 * @return Money|null Exact verified amount and currency, or null on mismatch.
+	 * @return array{money: Money|null, code: string|null} Verification result.
 	 */
 	private function verify_provider_payment(
 		ProviderPayment $payment,
@@ -654,21 +660,21 @@ final class WebhookProcessor {
 		string $charge_id,
 		string $checkout_id,
 		string $reference
-	): ?Money {
+	): array {
 		if ( ! hash_equals( $charge_id, $payment->payment_id() ) ) {
-			return null;
+			return array( 'money' => null, 'code' => 'provider_payment_id_mismatch' );
 		}
 
 		if ( ! in_array( $payment->status(), self::SUCCESSFUL_PROVIDER_STATUSES, true ) ) {
-			return null;
+			return array( 'money' => null, 'code' => 'provider_payment_status_mismatch' );
 		}
 
-		if ( null === $payment->checkout_id() || ! hash_equals( $checkout_id, $payment->checkout_id() ) ) {
-			return null;
+		if ( null !== $payment->checkout_id() && ! hash_equals( $checkout_id, $payment->checkout_id() ) ) {
+			return array( 'money' => null, 'code' => 'provider_checkout_mismatch' );
 		}
 
-		if ( null === $payment->reference() || ! hash_equals( $reference, $payment->reference() ) ) {
-			return null;
+		if ( null !== $payment->reference() && ! hash_equals( $reference, $payment->reference() ) ) {
+			return array( 'money' => null, 'code' => 'provider_reference_mismatch' );
 		}
 
 		try {
@@ -677,10 +683,14 @@ final class WebhookProcessor {
 				Currency::from_code( $payment->currency() )
 			);
 		} catch ( InvalidArgumentException ) {
-			return null;
+			return array( 'money' => null, 'code' => 'provider_amount_invalid' );
 		}
 
-		return $intent->intent()->expected_amount()->equals( $money ) ? $money : null;
+		if ( ! $intent->intent()->expected_amount()->equals( $money ) ) {
+			return array( 'money' => null, 'code' => 'provider_amount_mismatch' );
+		}
+
+		return array( 'money' => $money, 'code' => null );
 	}
 
 	/**

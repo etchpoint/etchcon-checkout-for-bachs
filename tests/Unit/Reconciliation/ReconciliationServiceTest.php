@@ -59,6 +59,30 @@ final class ReconciliationServiceTest extends TestCase {
 		self::assertSame( 'pay_123', $refreshed->charge_id() );
 	}
 
+
+	/**
+	 * Nullable payment correlation fields do not block a checkout-correlated recovery.
+	 *
+	 * @return void
+	 */
+	public function test_successful_payment_without_optional_correlation_fields_recovers(): void {
+		$record  = self::intent_record();
+		$service = new ReconciliationService(
+			new InMemoryReconciliationIntentStore( array( $record ) ),
+			new InMemoryEventStore(),
+			new FakeCheckoutProvider( self::checkout( 'succeeded', 'pay_123' ) ),
+			new FakePaymentRetriever( self::payment_without_optional_correlation() ),
+			new FulfillmentRegistry(
+				array( new FakeFulfillmentHandler( 'woocommerce', FulfillmentDisposition::APPLIED ) )
+			),
+			Environment::SANDBOX
+		);
+
+		$result = $service->reconcile( 7 );
+
+		self::assertSame( ReconciliationDisposition::RECOVERED, $result->disposition() );
+	}
+
 	/**
 	 * A checkout that is not authoritatively successful must not be fulfilled.
 	 *
@@ -142,6 +166,23 @@ final class ReconciliationServiceTest extends TestCase {
 				'currency'    => 'USD',
 				'reference'   => 'ref_1847',
 				'checkout_id' => 'checkout_123',
+			)
+		);
+	}
+
+
+	/**
+	 * Build authoritative payment evidence without optional correlation fields.
+	 *
+	 * @return ProviderPayment
+	 */
+	private static function payment_without_optional_correlation(): ProviderPayment {
+		return ProviderPayment::from_api_response(
+			array(
+				'payment_id' => 'pay_123',
+				'status'     => 'succeeded',
+				'amount'     => '42.00',
+				'currency'   => 'USD',
 			)
 		);
 	}

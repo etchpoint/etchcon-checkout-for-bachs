@@ -132,36 +132,39 @@ final class ReconciliationService {
 			return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'checkout_missing' );
 		}
 
-		$payment_id = $record->charge_id();
+		try {
+			$checkout = $this->checkouts->get( $checkout_id );
+		} catch ( ApiException ) {
+			return new ReconciliationResult( ReconciliationDisposition::RETRYABLE_FAILURE, $intent_id, 'checkout_retrieval_failed' );
+		}
+
+		if ( ! hash_equals( $checkout_id, $checkout->checkout_id() ) ) {
+			return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'checkout_id_mismatch' );
+		}
+
+		if ( null !== $checkout->reference() && ! hash_equals( $intent->reference(), $checkout->reference() ) ) {
+			return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'checkout_reference_mismatch' );
+		}
+
+		if ( ! self::checkout_amount_matches( $record, $checkout->amount(), $checkout->currency() ) ) {
+			return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'checkout_amount_mismatch' );
+		}
+
+		if (
+			null === $checkout->payment_status()
+			|| ! in_array( $checkout->payment_status(), self::SUCCESSFUL_PROVIDER_STATUSES, true )
+			|| null === $checkout->payment_id()
+		) {
+			return new ReconciliationResult( ReconciliationDisposition::NO_ACTION, $intent_id, 'provider_not_succeeded' );
+		}
+
+		$checkout_payment_id = $checkout->payment_id();
+		$payment_id          = $record->charge_id();
 
 		if ( null === $payment_id ) {
-			try {
-				$checkout = $this->checkouts->get( $checkout_id );
-			} catch ( ApiException ) {
-				return new ReconciliationResult( ReconciliationDisposition::RETRYABLE_FAILURE, $intent_id, 'checkout_retrieval_failed' );
-			}
-
-			if ( ! hash_equals( $checkout_id, $checkout->checkout_id() ) ) {
-				return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'checkout_id_mismatch' );
-			}
-
-			if ( null !== $checkout->reference() && ! hash_equals( $intent->reference(), $checkout->reference() ) ) {
-				return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'checkout_reference_mismatch' );
-			}
-
-			if ( ! self::checkout_amount_matches( $record, $checkout->amount(), $checkout->currency() ) ) {
-				return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'checkout_amount_mismatch' );
-			}
-
-			if (
-				null === $checkout->payment_status()
-				|| ! in_array( $checkout->payment_status(), self::SUCCESSFUL_PROVIDER_STATUSES, true )
-				|| null === $checkout->payment_id()
-			) {
-				return new ReconciliationResult( ReconciliationDisposition::NO_ACTION, $intent_id, 'provider_not_succeeded' );
-			}
-
-			$payment_id = $checkout->payment_id();
+			$payment_id = $checkout_payment_id;
+		} elseif ( ! hash_equals( $payment_id, $checkout_payment_id ) ) {
+			return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'checkout_payment_mismatch' );
 		}
 
 		try {
@@ -170,10 +173,15 @@ final class ReconciliationService {
 			return new ReconciliationResult( ReconciliationDisposition::RETRYABLE_FAILURE, $intent_id, 'payment_retrieval_failed' );
 		}
 
-		$paid_amount = self::verify_provider_payment( $payment, $record, $payment_id, $checkout_id );
+		$verification = self::verify_provider_payment( $payment, $record, $payment_id, $checkout_id );
+		$paid_amount  = $verification['money'];
 
 		if ( null === $paid_amount ) {
-			return new ReconciliationResult( ReconciliationDisposition::REQUIRES_REVIEW, $intent_id, 'provider_evidence_mismatch' );
+			return new ReconciliationResult(
+				ReconciliationDisposition::REQUIRES_REVIEW,
+				$intent_id,
+				$verification['code'] ?? 'provider_evidence_mismatch'
+			);
 		}
 
 		if ( ! $this->intents->attach_successful_charge( $intent_id, $payment_id ) ) {
@@ -247,37 +255,45 @@ final class ReconciliationService {
 	 * @param IntentRecord    $record      Local payment intent record.
 	 * @param string          $payment_id  Expected payment identifier.
 	 * @param string          $checkout_id Expected checkout identifier.
-	 * @return Money|null Exact paid amount and currency, or null on mismatch.
+	 * Bachs documents payment checkout/reference correlation fields as nullable.
+	 * Reconciliation therefore proves correlation through the authoritative checkout
+	 * first, then requires these payment fields to match only when Bachs supplies them.
+	 *
+	 * @return array{money: Money|null, code: string|null} Verification result.
 	 */
 	private static function verify_provider_payment(
 		ProviderPayment $payment,
 		IntentRecord $record,
 		string $payment_id,
 		string $checkout_id
-	): ?Money {
+	): array {
 		if ( ! hash_equals( $payment_id, $payment->payment_id() ) ) {
-			return null;
+			return array( 'money' => null, 'code' => 'provider_payment_id_mismatch' );
 		}
 
 		if ( ! in_array( $payment->status(), self::SUCCESSFUL_PROVIDER_STATUSES, true ) ) {
-			return null;
+			return array( 'money' => null, 'code' => 'provider_payment_status_mismatch' );
 		}
 
-		if ( null === $payment->checkout_id() || ! hash_equals( $checkout_id, $payment->checkout_id() ) ) {
-			return null;
+		if ( null !== $payment->checkout_id() && ! hash_equals( $checkout_id, $payment->checkout_id() ) ) {
+			return array( 'money' => null, 'code' => 'provider_checkout_mismatch' );
 		}
 
-		if ( null === $payment->reference() || ! hash_equals( $record->intent()->reference(), $payment->reference() ) ) {
-			return null;
+		if ( null !== $payment->reference() && ! hash_equals( $record->intent()->reference(), $payment->reference() ) ) {
+			return array( 'money' => null, 'code' => 'provider_reference_mismatch' );
 		}
 
 		try {
 			$money = Money::from_decimal( $payment->amount(), Currency::from_code( $payment->currency() ) );
 		} catch ( InvalidArgumentException ) {
-			return null;
+			return array( 'money' => null, 'code' => 'provider_amount_invalid' );
 		}
 
-		return $record->intent()->expected_amount()->equals( $money ) ? $money : null;
+		if ( ! $record->intent()->expected_amount()->equals( $money ) ) {
+			return array( 'money' => null, 'code' => 'provider_amount_mismatch' );
+		}
+
+		return array( 'money' => $money, 'code' => null );
 	}
 
 	/**

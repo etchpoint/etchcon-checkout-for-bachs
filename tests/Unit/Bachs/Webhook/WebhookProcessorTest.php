@@ -61,6 +61,34 @@ final class WebhookProcessorTest extends TestCase {
 		);
 	}
 
+
+	/**
+	 * Nullable payment correlation fields remain valid after signed event correlation.
+	 *
+	 * @return void
+	 */
+	public function test_success_payment_without_optional_correlation_fields_is_accepted(): void {
+		$payment = ProviderPayment::from_api_response(
+			array(
+				'payment_id'       => 'ch_123',
+				'status'           => 'succeeded',
+				'amount'           => '42.00',
+				'currency'         => 'USD',
+				'amount_paid'      => '42.00',
+				'amount_remaining' => '0.00',
+			)
+		);
+		$body    = $this->event_body( 'collection.succeeded' );
+		$result  = $this->processor(
+			new InMemoryEventStore(),
+			new InMemoryIntentStore( array( $this->intent_record() ) ),
+			new FakePaymentRetriever( $payment )
+		)->process( $this->signature_for( $body ), $body );
+
+		self::assertSame( WebhookProcessingDisposition::READY_FOR_FULFILLMENT, $result->disposition() );
+		self::assertNotNull( $result->verified_payment() );
+	}
+
 	/**
 	 * Reusing verified signature evidence with different raw bytes is rejected.
 	 *
