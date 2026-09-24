@@ -65,6 +65,20 @@ final class ProviderPayment {
 	private ?string $amount_remaining;
 
 	/**
+	 * Settlement-side amount when available.
+	 *
+	 * @var string|null
+	 */
+	private ?string $settlement_amount;
+
+	/**
+	 * Settlement currency when available.
+	 *
+	 * @var string|null
+	 */
+	private ?string $settlement_currency;
+
+	/**
 	 * Merchant correlation reference when available.
 	 *
 	 * @var string|null
@@ -87,16 +101,18 @@ final class ProviderPayment {
 	 * @throws InvalidArgumentException When required evidence is missing.
 	 */
 	public static function from_api_response( array $data ): self {
-		$instance                   = new self();
-		$instance->payment_id       = self::required_string( $data, 'payment_id' );
-		$instance->status           = self::required_string( $data, 'status' );
-		$instance->amount           = self::required_string( $data, 'amount' );
-		$instance->currency         = self::required_string( $data, 'currency' );
-		$instance->is_refundable    = self::optional_bool( $data, 'is_refundable' );
-		$instance->amount_paid      = self::optional_string( $data, 'amount_paid' );
-		$instance->amount_remaining = self::optional_string( $data, 'amount_remaining' );
-		$instance->reference        = self::optional_string( $data, 'reference' );
-		$instance->checkout_id      = self::optional_string( $data, 'checkout_id' );
+		$instance                      = new self();
+		$instance->payment_id          = self::required_string( $data, 'payment_id' );
+		$instance->status              = self::required_string( $data, 'status' );
+		$instance->amount              = self::required_string( $data, 'amount' );
+		$instance->currency            = self::required_string( $data, 'currency' );
+		$instance->is_refundable       = self::optional_bool( $data, 'is_refundable' );
+		$instance->amount_paid         = self::optional_string( $data, 'amount_paid' );
+		$instance->amount_remaining    = self::optional_string( $data, 'amount_remaining' );
+		$instance->settlement_amount   = self::optional_string( $data, 'settlement_amount' );
+		$instance->settlement_currency = self::optional_string( $data, 'settlement_currency' );
+		$instance->reference           = self::optional_string( $data, 'reference' );
+		$instance->checkout_id         = self::optional_string( $data, 'checkout_id' );
 
 		return $instance;
 	}
@@ -162,6 +178,24 @@ final class ProviderPayment {
 	 */
 	public function amount_remaining(): ?string {
 		return $this->amount_remaining;
+	}
+
+	/**
+	 * Get the settlement-side amount.
+	 *
+	 * @return string|null
+	 */
+	public function settlement_amount(): ?string {
+		return $this->settlement_amount;
+	}
+
+	/**
+	 * Get the settlement currency.
+	 *
+	 * @return string|null
+	 */
+	public function settlement_currency(): ?string {
+		return $this->settlement_currency;
 	}
 
 	/**

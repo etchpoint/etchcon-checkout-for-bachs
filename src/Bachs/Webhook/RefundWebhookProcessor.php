@@ -206,7 +206,9 @@ final class RefundWebhookProcessor {
 			return $this->requires_review( $record, $refund, 'refund_environment_mismatch', 'Refund environment does not match this webhook endpoint.' );
 		}
 
-		if ( ! $this->provider_refund_matches( $refund, $provider_refund ) ) {
+		$full_refund = $refund->requested_amount()->equals( $intent->intent()->expected_amount() );
+
+		if ( ! $this->provider_refund_matches( $refund, $provider_refund, $full_refund ) ) {
 			return $this->requires_review( $record, $refund, 'refund_correlation_mismatch', 'Authoritative Bachs refund state does not match the local request.' );
 		}
 
@@ -223,13 +225,13 @@ final class RefundWebhookProcessor {
 				return $this->retryable_failure( $record, $refund, 'refund_failed_state_not_visible' );
 			}
 
-			$this->refunds->update_provider_status( $refund->id(), RefundStatus::FAILED, $provider_refund->refunded_amount() );
+			$this->refunds->update_provider_status( $refund->id(), RefundStatus::FAILED );
 
 			return $this->finalize_status_event( $record, $refund );
 		}
 
 		if ( self::EVENT_CREATED === $event->type() ) {
-			$this->refunds->update_provider_status( $refund->id(), self::normalize_status( $provider_refund->status() ), $provider_refund->refunded_amount() );
+			$this->refunds->update_provider_status( $refund->id(), self::normalize_status( $provider_refund->status() ) );
 
 			return $this->finalize_status_event( $record, $refund );
 		}
@@ -238,22 +240,29 @@ final class RefundWebhookProcessor {
 			return $this->retryable_failure( $record, $refund, 'refund_success_state_not_visible' );
 		}
 
-		try {
-			$refunded_amount = Money::from_decimal( $provider_refund->refunded_amount(), $refund->requested_amount()->currency() );
-		} catch ( InvalidArgumentException ) {
+		if ( ! self::is_positive_decimal( $provider_refund->refunded_amount() ) ) {
 			return $this->requires_review( $record, $refund, 'refund_amount_invalid', 'Bachs returned an invalid refunded amount.' );
 		}
 
-		if ( ! $refunded_amount->equals( $refund->requested_amount() ) ) {
-			return $this->requires_review( $record, $refund, 'refund_amount_mismatch', 'Bachs confirmed a refund amount different from the persisted request.' );
+		$refunded_amount = $refund->requested_amount();
+
+		if ( ! $full_refund ) {
+			try {
+				$provider_refunded_amount = Money::from_decimal( $provider_refund->refunded_amount(), $refund->requested_amount()->currency() );
+			} catch ( InvalidArgumentException ) {
+				return $this->requires_review( $record, $refund, 'refund_amount_invalid', 'Bachs returned an invalid refunded amount.' );
+			}
+
+			if ( ! $provider_refunded_amount->equals( $refund->requested_amount() ) ) {
+				return $this->requires_review( $record, $refund, 'refund_amount_mismatch', 'Bachs confirmed a partial refund amount different from the persisted request.' );
+			}
 		}
 
 		if ( ! $this->refunds->update_provider_status( $refund->id(), RefundStatus::SUCCEEDED, $refunded_amount->amount() ) ) {
 			return $this->retryable_failure( $record, $refund, 'refund_status_update_failed' );
 		}
 
-		$full_refund = $refunded_amount->equals( $intent->intent()->expected_amount() );
-		$verified    = new VerifiedRefund(
+		$verified = new VerifiedRefund(
 			$refund->integration(),
 			$refund->local_object_type(),
 			$refund->local_object_id(),
@@ -341,7 +350,7 @@ final class RefundWebhookProcessor {
 			return null;
 		}
 
-		if ( ! $this->refunds->attach_provider_refund( $refund->id(), $provider_refund->refund_id(), self::normalize_status( $provider_refund->status() ), $provider_refund->refunded_amount() ) ) {
+		if ( ! $this->refunds->attach_provider_refund( $refund->id(), $provider_refund->refund_id(), self::normalize_status( $provider_refund->status() ) ) ) {
 			return null;
 		}
 
@@ -353,11 +362,20 @@ final class RefundWebhookProcessor {
 	 *
 	 * @param RefundRecord   $refund          Local refund record.
 	 * @param ProviderRefund $provider_refund Authoritative provider refund.
+	 * @param bool           $full_refund     Whether the provider request omitted an amount.
 	 * @return bool
 	 */
-	private function provider_refund_matches( RefundRecord $refund, ProviderRefund $provider_refund ): bool {
+	private function provider_refund_matches( RefundRecord $refund, ProviderRefund $provider_refund, bool $full_refund ): bool {
 		if ( ! hash_equals( $refund->charge_id(), $provider_refund->charge_id() ) || ! hash_equals( $refund->reference(), $provider_refund->reference() ) ) {
 			return false;
+		}
+
+		if ( ! self::is_positive_decimal( $provider_refund->requested_amount() ) ) {
+			return false;
+		}
+
+		if ( $full_refund ) {
+			return true;
 		}
 
 		try {
@@ -367,6 +385,20 @@ final class RefundWebhookProcessor {
 		}
 
 		return $requested->equals( $refund->requested_amount() );
+	}
+
+	/**
+	 * Validate a positive provider decimal without assuming its currency scale.
+	 *
+	 * @param string $amount Provider amount.
+	 * @return bool
+	 */
+	private static function is_positive_decimal( string $amount ): bool {
+		if ( 1 !== preg_match( '/^[0-9]+(?:\.[0-9]+)?$/D', $amount ) ) {
+			return false;
+		}
+
+		return 1 !== preg_match( '/^0+(?:\.0+)?$/D', $amount );
 	}
 
 	/**

@@ -13,6 +13,7 @@ use Etchpoint\BachsIntegrations\Bachs\ApiException;
 use Etchpoint\BachsIntegrations\Bachs\PaymentsApi;
 use Etchpoint\BachsIntegrations\Bachs\ProviderRefund;
 use Etchpoint\BachsIntegrations\Bachs\RefundsApi;
+use Etchpoint\BachsIntegrations\Core\Money\Currency;
 use Etchpoint\BachsIntegrations\Core\Money\Money;
 use Etchpoint\BachsIntegrations\Core\Payment\ApplicationStatus;
 use Etchpoint\BachsIntegrations\Core\Payment\ProviderStatus;
@@ -130,34 +131,46 @@ final class RefundRequestService {
 
 		$provider_payment = $this->payments->get( $charge_id );
 
-		if (
-			! hash_equals( $charge_id, $provider_payment->payment_id() )
-			|| ! in_array( $provider_payment->status(), self::SUCCESSFUL_PAYMENT_STATUSES, true )
-			|| ! hash_equals( $intent->expected_amount()->currency()->code(), $provider_payment->currency() )
-		) {
-			throw self::request_exception( 'Authoritative Bachs payment state does not match the local payment.', RefundRequestException::REQUIRES_REVIEW );
+		if ( ! hash_equals( $charge_id, $provider_payment->payment_id() ) || ! in_array( $provider_payment->status(), self::SUCCESSFUL_PAYMENT_STATUSES, true ) ) {
+			throw self::request_exception( 'Authoritative Bachs payment state does not match the local payment.', RefundRequestException::PROVIDER_PAYMENT_MISMATCH );
 		}
 
 		if ( true !== $provider_payment->is_refundable() ) {
 			throw self::request_exception( 'Bachs reports that this payment is not currently refundable.', RefundRequestException::INVALID_REQUEST );
 		}
 
-		try {
-			$provider_amount = Money::from_decimal( $provider_payment->amount(), $intent->expected_amount()->currency() );
-		} catch ( InvalidArgumentException ) {
-			throw self::request_exception( 'Bachs returned an invalid original payment amount.', RefundRequestException::REQUIRES_REVIEW );
-		}
-
-		if ( ! $provider_amount->equals( $intent->expected_amount() ) ) {
-			throw self::request_exception( 'Authoritative Bachs payment amount does not match the local payment.', RefundRequestException::REQUIRES_REVIEW );
-		}
-
 		if ( null !== $intent_record->checkout_id() && null !== $provider_payment->checkout_id() && ! hash_equals( $intent_record->checkout_id(), $provider_payment->checkout_id() ) ) {
-			throw self::request_exception( 'Bachs payment checkout correlation does not match.', RefundRequestException::REQUIRES_REVIEW );
+			throw self::request_exception( 'Bachs payment checkout correlation does not match.', RefundRequestException::PROVIDER_CHECKOUT_MISMATCH );
 		}
 
 		if ( null !== $provider_payment->reference() && ! hash_equals( $intent->reference(), $provider_payment->reference() ) ) {
-			throw self::request_exception( 'Bachs payment reference correlation does not match.', RefundRequestException::REQUIRES_REVIEW );
+			throw self::request_exception( 'Bachs payment reference correlation does not match.', RefundRequestException::PROVIDER_REFERENCE_MISMATCH );
+		}
+
+		$full_refund = $refund_amount->equals( $intent->expected_amount() );
+
+		if ( ! $full_refund ) {
+			$settlement_currency = $provider_payment->settlement_currency();
+
+			if ( null === $settlement_currency ) {
+				throw self::request_exception(
+					'Partial refunds require Bachs settlement-currency evidence.',
+					RefundRequestException::PARTIAL_REFUND_CURRENCY_UNSUPPORTED
+				);
+			}
+
+			try {
+				$provider_settlement_currency = Currency::from_code( $settlement_currency );
+			} catch ( InvalidArgumentException ) {
+				throw self::request_exception( 'Bachs returned an invalid settlement currency.', RefundRequestException::REQUIRES_REVIEW );
+			}
+
+			if ( ! $provider_settlement_currency->equals( $intent->expected_amount()->currency() ) ) {
+				throw self::request_exception(
+					'Partial refunds are not supported when the Bachs settlement currency differs from the store currency.',
+					RefundRequestException::PARTIAL_REFUND_CURRENCY_UNSUPPORTED
+				);
+			}
 		}
 
 		$uuid            = wp_generate_uuid4();
@@ -220,10 +233,11 @@ final class RefundRequestService {
 			);
 		}
 
-		$this->assert_provider_refund_matches( $record, $provider_refund );
-		$status = self::provider_status( $provider_refund->status() );
+		$this->assert_provider_refund_matches( $record, $provider_refund, $full_refund );
+		$status                = self::provider_status( $provider_refund->status() );
+		$local_refunded_amount = RefundStatus::SUCCEEDED === $status ? $record->requested_amount()->amount() : null;
 
-		if ( ! $this->refunds->attach_provider_refund( $record->id(), $provider_refund->refund_id(), $status, $provider_refund->refunded_amount() ) ) {
+		if ( ! $this->refunds->attach_provider_refund( $record->id(), $provider_refund->refund_id(), $status, $local_refunded_amount ) ) {
 			throw self::request_exception( 'Provider refund was created but local state could not be updated.', RefundRequestException::RETRYABLE );
 		}
 
@@ -241,18 +255,25 @@ final class RefundRequestService {
 	 *
 	 * @param RefundRecord   $record          Local refund record.
 	 * @param ProviderRefund $provider_refund Provider response.
+	 * @param bool           $full_refund     Whether the request omitted the provider amount.
 	 * @return void
 	 *
 	 * @throws RefundRequestException When the response does not match the request.
 	 */
-	private function assert_provider_refund_matches( RefundRecord $record, ProviderRefund $provider_refund ): void {
-		if (
-			! hash_equals( $record->charge_id(), $provider_refund->charge_id() )
-			|| ! hash_equals( $record->reference(), $provider_refund->reference() )
-			|| ! hash_equals( $record->requested_amount()->amount(), $provider_refund->requested_amount() )
-		) {
+	private function assert_provider_refund_matches( RefundRecord $record, ProviderRefund $provider_refund, bool $full_refund ): void {
+		if ( ! hash_equals( $record->charge_id(), $provider_refund->charge_id() ) || ! hash_equals( $record->reference(), $provider_refund->reference() ) ) {
 			$this->refunds->mark_request_failure( $record->id(), RefundStatus::REQUIRES_REVIEW, 'provider_correlation_mismatch', 'Bachs refund response did not match the persisted request.' );
-			throw self::request_exception( 'Bachs refund response did not match the persisted request.', RefundRequestException::REQUIRES_REVIEW );
+			throw self::request_exception( 'Bachs refund response did not match the persisted request.', RefundRequestException::PROVIDER_REFUND_MISMATCH );
+		}
+
+		if ( ! self::is_positive_decimal( $provider_refund->requested_amount() ) ) {
+			$this->refunds->mark_request_failure( $record->id(), RefundStatus::REQUIRES_REVIEW, 'provider_refund_amount_invalid', 'Bachs refund response contained an invalid requested amount.' );
+			throw self::request_exception( 'Bachs refund response contained an invalid requested amount.', RefundRequestException::PROVIDER_REFUND_MISMATCH );
+		}
+
+		if ( ! $full_refund && ! hash_equals( $record->requested_amount()->amount(), $provider_refund->requested_amount() ) ) {
+			$this->refunds->mark_request_failure( $record->id(), RefundStatus::REQUIRES_REVIEW, 'provider_refund_amount_mismatch', 'Bachs partial refund amount did not match the persisted request.' );
+			throw self::request_exception( 'Bachs partial refund amount did not match the persisted request.', RefundRequestException::PROVIDER_REFUND_MISMATCH );
 		}
 	}
 
@@ -271,6 +292,20 @@ final class RefundRequestService {
 			'failed'     => RefundStatus::FAILED,
 			default      => RefundStatus::REQUIRES_REVIEW,
 		};
+	}
+
+	/**
+	 * Validate a positive provider decimal without assuming its currency scale.
+	 *
+	 * @param string $amount Provider amount.
+	 * @return bool
+	 */
+	private static function is_positive_decimal( string $amount ): bool {
+		if ( 1 !== preg_match( '/^[0-9]+(?:\.[0-9]+)?$/D', $amount ) ) {
+			return false;
+		}
+
+		return 1 !== preg_match( '/^0+(?:\.0+)?$/D', $amount );
 	}
 
 	/**
