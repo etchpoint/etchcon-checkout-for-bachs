@@ -77,15 +77,15 @@ final class PMProGatewayRuntime {
 				(int) $order->user_id,
 				$membership_level
 			);
-			$cancel_url    = pmpro_url( 'checkout', '?pmpro_level=' . $membership_id );
-			$client        = new ApiClient( $configuration->environment(), $configuration->api_key() );
-			$coordinator   = new PMProCheckoutCoordinator(
+			$cancel_url  = pmpro_url( 'checkout', '?pmpro_level=' . $membership_id );
+			$client      = new ApiClient( $configuration->environment(), $configuration->api_key() );
+			$coordinator = new PMProCheckoutCoordinator(
 				self::intent_repository(),
 				new CheckoutApi( $client ),
 				$configuration->environment(),
 				substr( hash( 'sha256', home_url( '/' ) ), 0, 12 )
 			);
-			$result        = $coordinator->start(
+			$result      = $coordinator->start(
 				(int) $order->id,
 				$membership_id,
 				(string) $order->total,
