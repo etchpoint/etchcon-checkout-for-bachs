@@ -662,19 +662,31 @@ final class WebhookProcessor {
 		string $reference
 	): array {
 		if ( ! hash_equals( $charge_id, $payment->payment_id() ) ) {
-			return array( 'money' => null, 'code' => 'provider_payment_id_mismatch' );
+			return array(
+				'money' => null,
+				'code'  => 'provider_payment_id_mismatch',
+			);
 		}
 
 		if ( ! in_array( $payment->status(), self::SUCCESSFUL_PROVIDER_STATUSES, true ) ) {
-			return array( 'money' => null, 'code' => 'provider_payment_status_mismatch' );
+			return array(
+				'money' => null,
+				'code'  => 'provider_payment_status_mismatch',
+			);
 		}
 
 		if ( null !== $payment->checkout_id() && ! hash_equals( $checkout_id, $payment->checkout_id() ) ) {
-			return array( 'money' => null, 'code' => 'provider_checkout_mismatch' );
+			return array(
+				'money' => null,
+				'code'  => 'provider_checkout_mismatch',
+			);
 		}
 
 		if ( null !== $payment->reference() && ! hash_equals( $reference, $payment->reference() ) ) {
-			return array( 'money' => null, 'code' => 'provider_reference_mismatch' );
+			return array(
+				'money' => null,
+				'code'  => 'provider_reference_mismatch',
+			);
 		}
 
 		try {
@@ -683,14 +695,23 @@ final class WebhookProcessor {
 				Currency::from_code( $payment->currency() )
 			);
 		} catch ( InvalidArgumentException ) {
-			return array( 'money' => null, 'code' => 'provider_amount_invalid' );
+			return array(
+				'money' => null,
+				'code'  => 'provider_amount_invalid',
+			);
 		}
 
 		if ( ! $intent->intent()->expected_amount()->equals( $money ) ) {
-			return array( 'money' => null, 'code' => 'provider_amount_mismatch' );
+			return array(
+				'money' => null,
+				'code'  => 'provider_amount_mismatch',
+			);
 		}
 
-		return array( 'money' => $money, 'code' => null );
+		return array(
+			'money' => $money,
+			'code'  => null,
+		);
 	}
 
 	/**
