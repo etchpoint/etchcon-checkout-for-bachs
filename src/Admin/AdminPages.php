@@ -185,6 +185,7 @@ final class AdminPages {
 		$url    = add_query_arg(
 			array(
 				'bachs_reconcile'       => $result->disposition()->value,
+				'bachs_reconcile_code'  => $result->code(),
 				'bachs_reconcile_nonce' => wp_create_nonce( 'etchpoint_bachs_reconciliation_notice' ),
 			),
 			admin_url( 'admin.php?page=' . self::RECONCILIATION_SLUG )
@@ -379,11 +380,23 @@ final class AdminPages {
 		}
 
 		$status = sanitize_key( wp_unslash( $_GET['bachs_reconcile'] ) );
+		$code   = isset( $_GET['bachs_reconcile_code'] )
+			? sanitize_key( wp_unslash( $_GET['bachs_reconcile_code'] ) )
+			: '';
+
+		if ( '' === $code ) {
+			return sprintf(
+				/* translators: %s: reconciliation result. */
+				__( 'Reconciliation result: %s', 'payment-integrations-for-bachs' ),
+				$status
+			);
+		}
 
 		return sprintf(
-			/* translators: %s: reconciliation result code. */
-			__( 'Reconciliation result: %s', 'payment-integrations-for-bachs' ),
-			$status
+			/* translators: 1: reconciliation result, 2: safe diagnostic code. */
+			__( 'Reconciliation result: %1$s (%2$s)', 'payment-integrations-for-bachs' ),
+			$status,
+			$code
 		);
 	}
 
