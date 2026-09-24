@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Etchpoint\BachsIntegrations\Integrations\FluentForms;
 
 use Etchpoint\BachsIntegrations\Bachs\ApiClient;
+use Etchpoint\BachsIntegrations\Bachs\ApiException;
 use Etchpoint\BachsIntegrations\Bachs\CheckoutApi;
 use Etchpoint\BachsIntegrations\Bachs\RuntimeConfiguration;
 use Etchpoint\BachsIntegrations\Core\Money\Currency;
@@ -109,6 +110,7 @@ final class FluentFormsProcessor extends BaseProcessor {
 
 		$this->form = $form;
 		$this->setSubmissionId( $submission_id );
+		$failure_code = 'FF_CONFIG';
 
 		try {
 			$configuration = RuntimeConfiguration::from_wordpress();
@@ -117,13 +119,17 @@ final class FluentFormsProcessor extends BaseProcessor {
 				throw new RuntimeException( 'Bachs payment configuration is incomplete.' );
 			}
 
+			$failure_code = 'FF_TRANSACTION_CREATE';
 			$this->createInitialPendingTransaction( false, false );
-			$transaction = $this->getLastTransaction( $submission_id );
+
+			$failure_code = 'FF_TRANSACTION_READ';
+			$transaction  = $this->getLastTransaction( $submission_id );
 
 			if ( ! is_object( $transaction ) ) {
 				throw new RuntimeException( 'Fluent Forms did not create a pending payment transaction.' );
 			}
 
+			$failure_code     = 'FF_TRANSACTION_DATA';
 			$transaction_id   = isset( $transaction->id ) ? (int) $transaction->id : 0;
 			$transaction_hash = isset( $transaction->transaction_hash ) && is_string( $transaction->transaction_hash )
 				? $transaction->transaction_hash
@@ -137,9 +143,13 @@ final class FluentFormsProcessor extends BaseProcessor {
 				throw new RuntimeException( 'Fluent Forms pending transaction is incomplete.' );
 			}
 
+			$failure_code = 'FF_AMOUNT_MATCH';
+
 			if ( (string) $total_payable !== (string) $payment_total ) {
 				throw new RuntimeException( 'Fluent Forms payment total changed during checkout initialization.' );
 			}
+
+			$failure_code = 'FF_AMOUNT_CONVERSION';
 
 			$currency    = Currency::from_code( $currency_code );
 			$total       = FluentFormsAmount::from_minor_units( $payment_total, $currency );
@@ -150,6 +160,9 @@ final class FluentFormsProcessor extends BaseProcessor {
 			);
 			$success_url = add_query_arg( $return_args + array( 'type' => 'success' ), site_url( '/' ) );
 			$cancel_url  = add_query_arg( $return_args + array( 'type' => 'cancelled' ), site_url( '/' ) );
+
+			$failure_code = 'FF_CHECKOUT_SETUP';
+
 			$client      = new ApiClient( $configuration->environment(), $configuration->api_key() );
 			$coordinator = new FluentFormsCheckoutCoordinator(
 				self::intent_repository(),
@@ -157,7 +170,10 @@ final class FluentFormsProcessor extends BaseProcessor {
 				$configuration->environment(),
 				substr( hash( 'sha256', home_url( '/' ) ), 0, 12 )
 			);
-			$result      = $coordinator->start(
+
+			$failure_code = 'FF_CHECKOUT_START';
+
+			$result = $coordinator->start(
 				$submission_id,
 				$form_id,
 				$total,
@@ -166,6 +182,7 @@ final class FluentFormsProcessor extends BaseProcessor {
 				$cancel_url
 			);
 
+			$failure_code = 'FF_METADATA_SAVE';
 			$this->setMetaData( self::INTENT_META, $result->intent_uuid() );
 			$this->setMetaData( self::CHECKOUT_META, $result->checkout_id() );
 
@@ -179,8 +196,28 @@ final class FluentFormsProcessor extends BaseProcessor {
 				),
 				200
 			);
-		} catch ( Throwable ) {
-			wp_send_json_error( array( 'message' => __( 'Bachs checkout could not be started. Please try again.', 'payment-integrations-for-bachs' ) ), 423 );
+		} catch ( Throwable $exception ) {
+			// Report only a fixed stage, exception category, and optional HTTP status.
+			// Never expose exception messages, provider payloads, or credentials.
+			if ( $exception instanceof ApiException ) {
+				$failure_code .= '_HTTP_' . (string) $exception->http_status();
+			} elseif ( $exception instanceof \TypeError ) {
+				$failure_code .= '_TYPE';
+			} elseif ( $exception instanceof \Error ) {
+				$failure_code .= '_ERROR';
+			}
+
+			wp_send_json_error(
+				array(
+					'code'    => $failure_code,
+					'message' => sprintf(
+						/* translators: %s: Safe checkout support code. */
+						__( 'Bachs checkout could not be started. Please try again. Support code: %s', 'payment-integrations-for-bachs' ),
+						$failure_code
+					),
+				),
+				423
+			);
 		}
 	}
 
